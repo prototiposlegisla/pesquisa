@@ -226,7 +226,7 @@ tipo: 0 (todos os tipos)
       "Regulamenta, no âmbito do Município...",
       "ELISEU GABRIEL (PSB)",
       "ADOLESCENTE | ADMISSAO",
-      "pl projeto de lei 31 2026 regulamenta ambito municipio adolescente admissao eliseu gabriel psb"
+      "pl|projeto de lei|31|2026||regulamenta ambito municipio...|adolescente|admissao|eliseu gabriel psb"
     ]
   ]
 }
@@ -251,7 +251,7 @@ tipo: 0 (todos os tipos)
 - `ementa` ← `ementa` da API (preservar texto original sem modificações)
 
 **Não aplicar transformações em:**
-- Ementa: manter caracteres especiais, pontuação, quebras de linha, tudo
+- Ementa: manter caracteres especiais, pontuação, quebras de linha, tudo. Não aplicar transformações no campo final ementa (a normalização ocorre apenas no searchable).
 
 ---
 
@@ -284,12 +284,12 @@ Output: "18380/2026"
 **Transformações obrigatórias:**
 
 1. **Limpeza de vereadores:** Remover prefixo `"Ver. "` quando presente
-2. **Preservar outros tipos:** Manter texto original para:
+2. **Simplificação da Mesa:** Transformar qualquer texto que comece com `"MESA"` em `"Mesa Diretora"`
+3. **Preservar outros tipos:** Manter texto original para:
    - Executivo: `"Executivo - NOME"`
-   - Mesa: `"MESA DA CAMARA MUNICIPAL..."`
    - Comissões: `"Comissão de..."`
    - Tribunal: `"TRIBUNAL DE CONTAS..."`
-3. **Concatenação:** Unir múltiplos promoventes com `" | "` (pipe com espaços)
+4. **Concatenação:** Unir múltiplos promoventes com `" | "` (pipe com espaços)
 
 **Exemplos:**
 
@@ -304,20 +304,28 @@ Input:  [{"texto": "Executivo - RICARDO NUNES"}]
 Output: "Executivo - RICARDO NUNES"
 
 Input:  [{"texto": "MESA DA CAMARA MUNICIPAL DE SAO PAULO - 01/01/2025 a 31/12/2025"}]
-Output: "MESA DA CAMARA MUNICIPAL DE SAO PAULO - 01/01/2025 a 31/12/2025"
+Output: "Mesa Diretora"
 
 Input:  [{"texto": "Comissão de Trânsito, Transporte e Atividade Econômica"}]
 Output: "Comissão de Trânsito, Transporte e Atividade Econômica"
+
+Input:  [{"texto": "TRIBUNAL DE CONTAS DO MUNICIPIO"}]
+Output: "TRIBUNAL DE CONTAS DO MUNICIPIO"
 
 Input:  []
 Output: ""
 ```
 
+**Regra de detecção da Mesa:**
+- Se o texto começa com `"MESA"` (case-insensitive)
+- Substituir o texto completo por `"Mesa Diretora"`
+- Motivo: O período (ex: "01/01/2025 a 31/12/2025") é redundante, pois o ano do projeto já indica o período
+
 **Tipos de promoventes observados:**
 - Vereadores: maioria (~95%)
+- Mesa Diretora: ocasional (~1-2%)
 - Comissões: raro
 - Executivo: ocasional
-- Mesa: raro
 - Tribunal: muito raro
 
 ---
@@ -366,10 +374,10 @@ Output: "PALAVRA1 | PALAVRA2 | ... | PALAVRA44" (todas incluídas)
 8. Promoventes concatenados
 
 **Separação entre campos:**
-- Usar `" | "` (pipe com espaços) para separar cada campo
-- **Importante:** Evita criação de "palavras falsas" na concatenação
-- Exemplo de problema evitado: "saúde" + "Eduardo" = "saúdeEduardo" ❌
-- Solução correta: "saúde | Eduardo" ✅
+- Usar `|` (pipe SEM espaços) para separar cada campo
+- **Importante:** Cria uma barreira física entre campos para evitar falsos positivos
+- Exemplo de problema evitado: Busca "trabalhador paulistano" encontrando "João Trabalhador" (Promovente) + "Paulistano" (Palavra-chave)
+- Solução: "joao trabalhador|paulistano" (Barreira impede match de frase exata cruzando campos)
 
 **Mapeamento de tipos por extenso:**
 ```
@@ -382,12 +390,14 @@ PLO → "Projeto de Lei Orgânica"
 **Normalização aplicada (nesta ordem):**
 1. **Lowercase:** Converter tudo para minúsculas
 2. **Remover acentos:** ã→a, é→e, í→i, ó→o, ú→u, ç→c, etc.
-3. **Remover pontuação:** Eliminar caracteres especiais, manter apenas letras, números e espaços
-4. **Normalizar espaços:** Converter múltiplos espaços em espaço único
+3. **Remover pontos de milhar:** Remover pontos que estejam entre dígitos (ex: "14.811" → "14811")
+4. **Remover pontuação restante:** Eliminar restantes caracteres especiais, mantendo apenas letras, números, espaços e o caractere pipe `|`
+5. **Normalizar espaços:** Converter múltiplos espaços em espaço único
 
 **Exemplos de normalização:**
 
 ```
+"Lei 14.811" → "lei 14811"
 "José Américo" → "jose americo"
 "São Paulo" → "sao paulo"
 "Criança/Adolescente" → "crianca adolescente"
@@ -409,10 +419,10 @@ Input (campos separados):
   promoventes: "ELISEU GABRIEL (PSB)"
 
 Concatenação bruta:
-  "PL | Projeto de Lei | 31 | 2026 |  | Regulamenta o art. 59-A do ECA... | ADOLESCENTE | ADMISSAO | ELISEU GABRIEL (PSB)"
+  "PL|Projeto de Lei|31|2026||Regulamenta o art. 59-A do ECA...|ADOLESCENTE | ADMISSAO|ELISEU GABRIEL (PSB)"
 
 Após normalização:
-  "pl projeto de lei 31 2026 regulamenta o art 59 a do eca adolescente admissao eliseu gabriel psb"
+  "pl|projeto de lei|31|2026||regulamenta o art 59 a do eca...|adolescente | admissao|eliseu gabriel psb"
 ```
 
 **Exemplo completo sem palavras-chave:**
@@ -428,10 +438,10 @@ Input (campos separados):
   promoventes: "JOÃO SILVA (PT)"
 
 Concatenação bruta:
-  "PL | Projeto de Lei | 25 | 2026 |  | Autoriza o Poder Executivo... | SEM_PALAVRAS | JOÃO SILVA (PT)"
+  "PL|Projeto de Lei|25|2026||Autoriza o Poder Executivo...|SEM_PALAVRAS|JOÃO SILVA (PT)"
 
 Após normalização:
-  "pl projeto de lei 25 2026 autoriza poder executivo sem palavras joao silva pt"
+  "pl|projeto de lei|25|2026||autoriza poder executivo...|sem palavras|joao silva pt"
 ```
 
 
@@ -441,7 +451,7 @@ Após normalização:
 
 **Critério:** Campo `codigo` da API em ordem DECRESCENTE.
 
-**Motivo:** O código representa a ordem cronológica real de protocolo dos projetos, não o número/tipo.
+**Motivo:** O código representa a ordem cronológica real de protocolo dos projetos, não o número/tipo. O campo codigo é estritamente crescente ao longo do tempo.
 
 **Comportamento esperado:**
 - Projetos mais recentes aparecem primeiro
@@ -521,7 +531,7 @@ O script deve executar validação em 5 níveis após processar os dados, ANTES 
 
 3. **Campo ANO:**
    - É numérico
-   - Entre 1991 e 2030 (range razoável)
+   - Entre 1991 e (ANO_CORRENTE + 1) 
 
 4. **Campo NORMA:**
    - Se preenchida, contém "/"
@@ -537,12 +547,14 @@ O script deve executar validação em 5 níveis após processar os dados, ANTES 
 
 7. **Campo PROMOVENTES:**
    - NÃO contém "Ver. " (deve ter sido removido)
+   - NÃO contém "MESA DA CAMARA" ou datas tipo "01/01/2025" (deve ter sido simplificado para "Mesa Diretora")
 
 8. **Campo SEARCHABLE:**
    - Não está vazio
    - Está em lowercase
    - Não contém acentos (amostragem: á, é, í, ó, ú, ã, õ, ç)
    - Não contém underscore "_" (SEM_PALAVRAS deve virar "sem palavras")
+   - Contém o caractere `|` separando os campos
 
 **Diferenciação:**
 - **Erros:** Violam regras obrigatórias → ABORTAR
@@ -567,6 +579,13 @@ palavras_chave = "EDUCACAO | ENSINO | ESCOLA"
 # ERRO: ainda tem "Ver."
 promoventes = "Ver. FULANO (PT)"
 # Deveria ser "FULANO (PT)"
+
+# ERRO: Mesa não foi simplificada
+promoventes = "MESA DA CAMARA MUNICIPAL DE SAO PAULO - 01/01/2025 a 31/12/2025"
+# Deveria ser "Mesa Diretora"
+
+# OK: Mesa simplificada
+promoventes = "Mesa Diretora"
 
 # ERRO: searchable não foi normalizado
 searchable = "PL Projeto de Lei José"
@@ -824,11 +843,11 @@ Frequência: Anual
 name: Atualização Diária
 on:
   schedule:
-    - cron: '0 3 * * *'  # 3h AM todo dia
+    - cron: '0 3 * * 2-6'  # 3h AM de Terça a Sábado
   workflow_dispatch:
 ```
 
-**Executa:** Atualiza `atual.json`
+**Executa:** Atualiza `atual.json` (Pula Domingo e Segunda pois não há novos projetos)
 **Duração esperada:** 10-15 segundos
 
 ---
@@ -885,12 +904,12 @@ on:
 name: Virada de Ano - Reconstrução Total
 on:
   schedule:
-    - cron: '0 2 1 1 *'  # 2h AM em 1º janeiro (ANTES das outras)
+    - cron: '0 8 1 1 *'  # 8h AM UTC em 1º janeiro (05:00 SP)
   workflow_dispatch:
 ```
 
 **Executa:** Atualiza TODAS as camadas
-**Motivo:** As faixas de anos mudam com o novo ano corrente
+**Motivo:** As faixas de anos mudam com o novo ano corrente. O horário de 08:00 UTC (05:00 SP) garante que a virada já ocorreu em ambos os servidores.
 **Duração esperada:** 2-3 minutos
 **Delays:** 15 segundos entre cada chamada
 
@@ -980,6 +999,21 @@ on:
 
 ---
 
+### 8.3 Risco na Virada do Ano (Timezone)
+
+**Cenário:** 
+O servidor do GitHub Actions roda em UTC. O servidor da Câmara e a virada do ano ocorrem em UTC-3 (São Paulo).
+
+**Risco:** 
+O workflow de "Virada de Ano" rodar quando ainda é dia 31/12 em SP (ex: 02:00 UTC é 23:00 em SP), ou vice-versa, causando inconsistência nos filtros de data e na reconstrução das camadas.
+
+**Solução:** 
+Agendar o workflow de virada para quando **já for dia 1º de janeiro em ambos os locais**.
+- **08:00 UTC = 05:00 SP**.
+- Isso garante que tanto o relógio global quanto o relógio local da Câmara já viraram o ano.
+
+---
+
 ### 8.2 Tratamento de Falhas
 
 **Cenários:**
@@ -1044,10 +1078,19 @@ Input:  "Executivo - RICARDO NUNES"
 Output: "Executivo - RICARDO NUNES" (mantém texto completo)
 ```
 
+**Promovente Mesa da Câmara:**
+```
+Input:  "MESA DA CAMARA MUNICIPAL DE SAO PAULO - 01/01/2025 a 31/12/2025"
+Output: "Mesa Diretora" (simplificado, remove período)
+```
+
 **Múltiplos promoventes mistos:**
 ```
 Input:  ["Ver. FULANO", "Executivo - X", "Ver. BELTRANO"]
 Output: "FULANO | Executivo - X | BELTRANO"
+
+Input:  ["Ver. FULANO", "MESA DA CAMARA..."]
+Output: "FULANO | Mesa Diretora"
 ```
 
 **Projeto só com ementa (sem promoventes e palavras-chave):**
@@ -1077,16 +1120,12 @@ Output: [
 **Ano na virada (31/12 → 01/01):**
 - Script recalcula faixas automaticamente
 - Estrutura se ajusta ao novo ano corrente
+- **Atenção:** Workflow aguarda janela segura de timezone (08:00 UTC)
 
 **Primeiro dia do ano (1º janeiro):**
 - Workflow de virada (2h AM) roda antes
 - Workflows regulares (3h-4h AM) rodam depois
 - Garantir que arquivos estão com estrutura do novo ano
-
-**Bloco histórico sem dados:**
-- Improvável (1991-2000 tem projetos)
-- Se ocorrer: arquivo com `data: []`
-- Validação permite arrays vazios
 
 ---
 
@@ -1258,9 +1297,9 @@ Output: [
       "2026",
       "",
       "Institui a Comissão Especial de Estudos sobre Inteligência Artificial.",
-      "MESA DA CAMARA MUNICIPAL DE SAO PAULO - 01/01/2025 a 31/12/2025",
+      "Mesa Diretora",
       "COMISSAO ESPECIAL | INTELIGENCIA ARTIFICIAL",
-      "pr projeto de resolucao 1 2026 institui comissao especial estudos inteligencia artificial comissao especial inteligencia artificial mesa camara municipal sao paulo 01 01 2025 31 12 2025"
+      "pr projeto de resolucao 1 2026 institui comissao especial estudos inteligencia artificial comissao especial inteligencia artificial mesa diretora"
     ],
     [
       "PDL",
@@ -1299,8 +1338,9 @@ Output: [
 
 **Projeto 2 (PR 1/2026):**
 - Código: 783611
-- Promovente: "MESA DA CAMARA..." mantido (não é vereador)
+- Promovente: "MESA DA CAMARA MUNICIPAL DE SAO PAULO - 01/01/2025 a 31/12/2025" → **"Mesa Diretora"** (simplificado)
 - Tipo extenso: "Projeto de Resolução"
+- Searchable: inclui "mesa diretora" normalizado
 
 **Projeto 3 (PDL 142/2025):**
 - Código: 782898
@@ -1342,8 +1382,9 @@ COLUNAS (índices 0-7)
 [2] ano            : str  - Ano
 [3] norma          : str  - Lei resultante ("numero/ano" ou "")
 [4] ementa         : str  - Texto original sem modificações
-[5] promoventes    : str  - Concatenado com " | " (Ver. removido de vereadores)
-                             String vazia "" se não houver promoventes
+[5] promoventes    : str  - Concatenado com " | " 
+                             Ver. removido de vereadores
+                             Mesa simplificada para "Mesa Diretora"
 [6] palavras-chave : str  - Concatenado com " | " (todas, sem truncar)
                              "SEM_PALAVRAS" se array vazio
 [7] searchable     : str  - Normalizado (lowercase, sem acentos, sem pontuação)
@@ -1358,17 +1399,27 @@ GARANTIAS
 ✓ Todas palavras-chave incluídas (sem truncamento)
 ✓ Projetos sem palavras-chave: "SEM_PALAVRAS"
 ✓ Projetos sem promoventes: string vazia ""
+✓ Mesa da Câmara simplificada: "Mesa Diretora"
 ✓ Ordenação por código DESC (cronológica real)
 ✓ Validação completa executada antes de salvar
 
 TIPOS DE PROMOVENTES
 ====================
 - Vereadores: "NOME (PARTIDO)" (removido "Ver. ")
+- Mesa Diretora: "Mesa Diretora" (simplificado, período removido)
 - Executivo: "Executivo - NOME" (mantido)
-- Mesa: "MESA DA CAMARA..." (mantido)
 - Comissões: "Comissão de..." (mantido)
 - Tribunal: "TRIBUNAL DE CONTAS..." (mantido)
 - Vazio: "" (quando array vazio)
+
+TRANSFORMAÇÕES DE PROMOVENTES
+=============================
+Entrada                                              → Saída
+"Ver. FULANO (PT)"                                   → "FULANO (PT)"
+"MESA DA CAMARA MUNICIPAL DE SAO PAULO - 01/01/..." → "Mesa Diretora"
+"Executivo - RICARDO NUNES"                          → "Executivo - RICARDO NUNES"
+"Comissão de Trânsito..."                            → "Comissão de Trânsito..."
+"TRIBUNAL DE CONTAS DO MUNICIPIO"                    → "TRIBUNAL DE CONTAS DO MUNICIPIO"
 
 PALAVRAS-CHAVE
 ==============
@@ -1401,6 +1452,7 @@ ESTATÍSTICAS ESPERADAS
 - Máximo 241 palavras-chave observado
 - ~8-10% projetos com norma preenchida
 - ~95% promoventes são vereadores
+- ~1-2% promoventes são Mesa Diretora
 - ~0-5% projetos com "SEM_PALAVRAS"
 ```
 
