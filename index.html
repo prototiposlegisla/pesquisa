@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Special+Elite&family=Reenie+Beanie&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Special+Elite&family=Reenie+Beanie&display=swap"
+        rel="stylesheet">
 
     <style>
         /* =========================================
@@ -44,17 +47,31 @@
             --color-pr: #1A4122;
 
             /* GRADIENTES CROMÁTICOS */
-            --bg-pl-start:  #efe1cd; --bg-pl-end:  #EFE6CD;
-            --bg-plo-start: #e5c8cf; --bg-plo-end: #e5c8d6;
-            --bg-pdl-start: #c5cde3; --bg-pdl-end: #c5d5e3;
-            --bg-pr-start:  #cfe3c5; --bg-pr-end:  #c5e3c7;
+            --bg-pl-start: #efe1cd;
+            --bg-pl-end: #EFE6CD;
+            --bg-plo-start: #e5c8cf;
+            --bg-plo-end: #e5c8d6;
+            --bg-pdl-start: #c5cde3;
+            --bg-pdl-end: #c5d5e3;
+            --bg-pr-start: #cfe3c5;
+            --bg-pr-end: #c5e3c7;
 
             /* CORES DE GRIFO */
-            --hl-1-start: #fde047; --hl-1-end: #facc15; --hl-1-sub: #fef9c3;
-            --hl-2-start: #67e8f9; --hl-2-end: #22d3ee; --hl-2-sub: #cffafe;
-            --hl-3-start: #f0abfc; --hl-3-end: #e879f9; --hl-3-sub: #f5d0fe;
-            --hl-4-start: #86efac; --hl-4-end: #4ade80; --hl-4-sub: #d1fae5;
-            --hl-5-start: #fdba74; --hl-5-end: #fb923c; --hl-5-sub: #ffedd5;
+            --hl-1-start: #fde047;
+            --hl-1-end: #facc15;
+            --hl-1-sub: #fef9c3;
+            --hl-2-start: #67e8f9;
+            --hl-2-end: #22d3ee;
+            --hl-2-sub: #cffafe;
+            --hl-3-start: #f0abfc;
+            --hl-3-end: #e879f9;
+            --hl-3-sub: #f5d0fe;
+            --hl-4-start: #86efac;
+            --hl-4-end: #4ade80;
+            --hl-4-sub: #d1fae5;
+            --hl-5-start: #fdba74;
+            --hl-5-end: #fb923c;
+            --hl-5-sub: #ffedd5;
         }
 
         * {
@@ -81,7 +98,10 @@
         body::before {
             content: "";
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: var(--paper-texture);
             opacity: 0.05;
             mix-blend-mode: multiply;
@@ -124,7 +144,7 @@
             margin-bottom: 9px;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             transform: rotate(-0.3deg);
             /* Sombras em camadas (mesmo padrão dos cards) */
             box-shadow:
@@ -145,7 +165,7 @@
             z-index: 0;
         }
 
-        .search-box > * {
+        .search-box>* {
             position: relative;
             z-index: 1;
         }
@@ -217,7 +237,7 @@
             pointer-events: none;
         }
 
-        .search-input:not(:placeholder-shown) ~ .clear-btn {
+        .search-input:not(:placeholder-shown)~.clear-btn {
             opacity: 1;
             pointer-events: auto;
         }
@@ -277,7 +297,7 @@
             position: relative;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             box-shadow:
                 0 1px 2px rgba(0, 0, 0, 0.06),
                 0 4px 8px rgba(0, 0, 0, 0.03),
@@ -297,14 +317,14 @@
             z-index: 0;
         }
 
-        .card > * {
+        .card>* {
             position: relative;
             z-index: 1;
         }
 
         .card:hover {
             transform: translateY(-4px) rotate(var(--card-rotation, 0deg));
-            border-color: rgba(0,0,0,0.1);
+            border-color: rgba(0, 0, 0, 0.1);
             z-index: 10;
             box-shadow:
                 0 4px 8px rgba(0, 0, 0, 0.06),
@@ -319,37 +339,67 @@
             background: linear-gradient(135deg, var(--bg-plo-start), var(--bg-plo-end));
             box-shadow: 0 1px 2px rgba(149, 29, 54, 0.08), 0 4px 8px rgba(149, 29, 54, 0.04), 0 12px 24px rgba(149, 29, 54, 0.02);
         }
+
         .card[data-type="PLO"]:hover {
             box-shadow: 0 4px 8px rgba(149, 29, 54, 0.08), 0 12px 24px rgba(149, 29, 54, 0.04), 0 32px 64px rgba(149, 29, 54, 0.02);
         }
-        .card[data-type="PLO"] .id-type { color: var(--color-plo); mix-blend-mode: multiply; }
-        .card[data-type="PLO"] .action-btn:hover { color: var(--color-plo); }
+
+        .card[data-type="PLO"] .id-type {
+            color: var(--color-plo);
+            mix-blend-mode: multiply;
+        }
+
+        .card[data-type="PLO"] .action-btn:hover {
+            color: var(--color-plo);
+        }
 
         /* PDL */
         .card[data-type="PDL"] {
             background: linear-gradient(135deg, var(--bg-pdl-start), var(--bg-pdl-end));
             box-shadow: 0 1px 2px rgba(0, 28, 61, 0.08), 0 4px 8px rgba(0, 28, 61, 0.04), 0 12px 24px rgba(0, 28, 61, 0.02);
         }
+
         .card[data-type="PDL"]:hover {
             box-shadow: 0 4px 8px rgba(0, 28, 61, 0.08), 0 12px 24px rgba(0, 28, 61, 0.04), 0 32px 64px rgba(0, 28, 61, 0.02);
         }
-        .card[data-type="PDL"] .id-type { color: var(--color-pdl); mix-blend-mode: multiply; }
-        .card[data-type="PDL"] .action-btn:hover { color: var(--color-pdl); }
+
+        .card[data-type="PDL"] .id-type {
+            color: var(--color-pdl);
+            mix-blend-mode: multiply;
+        }
+
+        .card[data-type="PDL"] .action-btn:hover {
+            color: var(--color-pdl);
+        }
 
         /* PR */
         .card[data-type="PR"] {
             background: linear-gradient(135deg, var(--bg-pr-start), var(--bg-pr-end));
             box-shadow: 0 1px 2px rgba(26, 65, 34, 0.08), 0 4px 8px rgba(26, 65, 34, 0.04), 0 12px 24px rgba(26, 65, 34, 0.02);
         }
+
         .card[data-type="PR"]:hover {
             box-shadow: 0 4px 8px rgba(26, 65, 34, 0.08), 0 12px 24px rgba(26, 65, 34, 0.04), 0 32px 64px rgba(26, 65, 34, 0.02);
         }
-        .card[data-type="PR"] .id-type { color: var(--color-pr); mix-blend-mode: multiply; }
-        .card[data-type="PR"] .action-btn:hover { color: var(--color-pr); }
+
+        .card[data-type="PR"] .id-type {
+            color: var(--color-pr);
+            mix-blend-mode: multiply;
+        }
+
+        .card[data-type="PR"] .action-btn:hover {
+            color: var(--color-pr);
+        }
 
         /* PL */
-        .card[data-type="PL"] .id-type { color: var(--color-pl); mix-blend-mode: multiply; }
-        .card[data-type="PL"] .action-btn:hover { color: var(--text-secondary); }
+        .card[data-type="PL"] .id-type {
+            color: var(--color-pl);
+            mix-blend-mode: multiply;
+        }
+
+        .card[data-type="PL"] .action-btn:hover {
+            color: var(--text-secondary);
+        }
 
         /* =========================================
            CABEÇALHO DO CARD
@@ -458,7 +508,9 @@
         /* =========================================
            CORPO E METADADOS
            ========================================= */
-        .card-body { margin-bottom: 16px; }
+        .card-body {
+            margin-bottom: 16px;
+        }
 
         .ementa {
             font-family: var(--font-ui-serif);
@@ -541,13 +593,14 @@
         }
 
         .keyword-chip [class*="hl-"] {
-             padding: 0 1px;
+            padding: 0 1px;
         }
 
         /* =========================================
            ESTILOS DE GRIFO
            ========================================= */
-        [class*="-full"], [class*="-sub"] {
+        [class*="-full"],
+        [class*="-sub"] {
             font-weight: 600;
             color: inherit;
             padding: 0 2px;
@@ -564,20 +617,45 @@
             box-decoration-break: clone;
         }
 
-        .hl-1-full { background-image: linear-gradient(100deg, var(--hl-1-start), var(--hl-1-end)); }
-        .hl-1-sub  { background-image: linear-gradient(to right, var(--hl-1-sub), var(--hl-1-sub)); }
+        .hl-1-full {
+            background-image: linear-gradient(100deg, var(--hl-1-start), var(--hl-1-end));
+        }
 
-        .hl-2-full { background-image: linear-gradient(100deg, var(--hl-2-start), var(--hl-2-end)); }
-        .hl-2-sub  { background-image: linear-gradient(to right, var(--hl-2-sub), var(--hl-2-sub)); }
+        .hl-1-sub {
+            background-image: linear-gradient(to right, var(--hl-1-sub), var(--hl-1-sub));
+        }
 
-        .hl-3-full { background-image: linear-gradient(100deg, var(--hl-3-start), var(--hl-3-end)); }
-        .hl-3-sub  { background-image: linear-gradient(to right, var(--hl-3-sub), var(--hl-3-sub)); }
+        .hl-2-full {
+            background-image: linear-gradient(100deg, var(--hl-2-start), var(--hl-2-end));
+        }
 
-        .hl-4-full { background-image: linear-gradient(100deg, var(--hl-4-start), var(--hl-4-end)); }
-        .hl-4-sub  { background-image: linear-gradient(to right, var(--hl-4-sub), var(--hl-4-sub)); }
+        .hl-2-sub {
+            background-image: linear-gradient(to right, var(--hl-2-sub), var(--hl-2-sub));
+        }
 
-        .hl-5-full { background-image: linear-gradient(100deg, var(--hl-5-start), var(--hl-5-end)); }
-        .hl-5-sub  { background-image: linear-gradient(to right, var(--hl-5-sub), var(--hl-5-sub)); }
+        .hl-3-full {
+            background-image: linear-gradient(100deg, var(--hl-3-start), var(--hl-3-end));
+        }
+
+        .hl-3-sub {
+            background-image: linear-gradient(to right, var(--hl-3-sub), var(--hl-3-sub));
+        }
+
+        .hl-4-full {
+            background-image: linear-gradient(100deg, var(--hl-4-start), var(--hl-4-end));
+        }
+
+        .hl-4-sub {
+            background-image: linear-gradient(to right, var(--hl-4-sub), var(--hl-4-sub));
+        }
+
+        .hl-5-full {
+            background-image: linear-gradient(100deg, var(--hl-5-start), var(--hl-5-end));
+        }
+
+        .hl-5-sub {
+            background-image: linear-gradient(to right, var(--hl-5-sub), var(--hl-5-sub));
+        }
 
         /* =========================================
            RESPONSIVIDADE
@@ -631,8 +709,94 @@
                 font-size: 11px;
             }
         }
+
+        /* =========================================
+           NOVOS ELEMENTOS: STATUS NORMAL E CARIMBO
+           ========================================= */
+
+        /* LINHA DA NORMA (Wrapper Principal) */
+        .norma-wrapper {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 00px;
+            padding-left: 150px;
+            /* Espaço maior para o carimbo estendido */
+            margin-top: -18px;
+            position: relative;
+            min-height: 40px;
+        }
+
+        /* 1. CARIMBO "APROVADO" */
+        .stamp-approved {
+            position: absolute;
+            left: -15px;
+            top: -15px;
+            /* Invade bem a linha de cima */
+
+            font-family: var(--font-mono);
+            /* Special Elite */
+            font-size: 2.2rem;
+            /* Bem maior */
+            font-weight: 700;
+            /* Bold */
+            /* font-style removed */
+
+            color: #d64045;
+            /* Vermelho mais desbotado/rosado */
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 2px 15px;
+
+
+            /* Borda fina dupla (estilo da imagem) */
+            /* border: 3px double #d64045;
+            border-radius: 2px 5px 1px 3px; */
+
+            /* Rotação e mixagem */
+            transform: rotate(-6deg);
+            mix-blend-mode: multiply;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 5;
+
+            /* TEXTURA INTERNA (Estilo Stencil/Falhado) */
+            /* Máscara de ruído para "corroer" a tinta */
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6'/%3E%3C/svg%3E");
+        }
+
+        /* 2. NÚMERO DA NORMA */
+        .norma-number {
+            font-family: var(--font-hand);
+            font-size: 2.2rem;
+            color: var(--ink-pen-blue);
+            font-weight: 600;
+            line-height: 0.8;
+            mix-blend-mode: multiply;
+            transform: rotate(-1deg);
+        }
+
+        /* 3. BOTÕES DA NORMA */
+        .norma-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 4px;
+        }
+
+        .norma-links .action-btn {
+            font-size: 0.65rem;
+            opacity: 0.8;
+        }
+
+        /* Ajuste de espaçamento do card quando tem norma */
+        .card:has(.norma-wrapper) .card-header {
+            margin-bottom: 24px;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="main-container">
@@ -650,12 +814,9 @@
             <div class="search-box">
                 <div class="search-input-wrapper">
                     <div class="input-container">
-                        <input
-                            type="text"
-                            class="search-input"
-                            placeholder="Buscar:"
-                        >
-                        <button class="clear-btn" onclick="document.querySelector('.search-input').value = ''; document.querySelector('.search-input').dispatchEvent(new Event('input'));">[limpar]</button>
+                        <input type="text" class="search-input" placeholder="Buscar:">
+                        <button class="clear-btn"
+                            onclick="document.querySelector('.search-input').value = ''; document.querySelector('.search-input').dispatchEvent(new Event('input'));">[limpar]</button>
                     </div>
                 </div>
             </div>
@@ -663,7 +824,8 @@
             <!-- Log de Resultados -->
             <div class="results-log">
                 <span class="results-count">Mostrando 25 de <strong>835</strong> resultados </span>
-                <span class="results-terms">Termos: <strong>"leitura"</strong> + <strong>"fundo"</strong> + <strong>"biblioteca"</strong></span>
+                <span class="results-terms">Termos: <strong>"leitura"</strong> + <strong>"fundo"</strong> +
+                    <strong>"biblioteca"</strong></span>
             </div>
         </div>
 
@@ -688,9 +850,27 @@
                     <button class="action-btn" title="Biblioteca">BIB</button>
                 </div>
             </div>
+
+            <!-- LINHA DA NORMA (Carimbo + Número + Links) -->
+            <div class="norma-wrapper">
+                <div class="stamp-approved">APROVADO</div>
+                <span class="norma-number">18.234/2024</span>
+                <div class="norma-links">
+                    <button class="action-btn" title="Projeto de Lei Paulistano">PLP</button>
+                    <span class="separator-pipe">/</span>
+                    <button class="action-btn" title="Biblioteca">BIB</button>
+                    <span class="separator-pipe">/</span>
+                    <button class="action-btn" title="Prefeitura">PREF</button>
+                </div>
+            </div>
             <div class="card-body">
                 <p class="ementa">
-                    Altera a <span class="hl-1-full" style="--hl-height: 40%">Lei</span> <span class="hl-1-sub" style="--hl-height: 35%">Org</span>ânica do Município de São Paulo para dispor sobre a <span class="hl-2-full" style="--hl-height: 55%">organização</span> administrativa, reestruturando as competências das subprefeituras e estabelecendo novos critérios para a descentralização da <span class="hl-2-full" style="--hl-height: 45%">gestão</span> <span class="hl-2-sub" style="--hl-height: 42%">púb</span>lica na cidade.
+                    Altera a <span class="hl-1-full" style="--hl-height: 40%">Lei</span> <span class="hl-1-sub"
+                        style="--hl-height: 35%">Org</span>ânica do Município de São Paulo para dispor sobre a <span
+                        class="hl-2-full" style="--hl-height: 55%">organização</span> administrativa, reestruturando as
+                    competências das subprefeituras e estabelecendo novos critérios para a descentralização da <span
+                        class="hl-2-full" style="--hl-height: 45%">gestão</span> <span class="hl-2-sub"
+                        style="--hl-height: 42%">púb</span>lica na cidade.
                 </p>
             </div>
             <div class="card-footer">
@@ -706,9 +886,12 @@
                         </div>
                     </div>
                     <div class="keywords">
-                        <span class="keyword-chip" style="transform: rotate(-0.5deg);">ADMINISTRAÇÃO <span class="hl-2-sub">PÚB</span>LICA</span>
-                        <span class="keyword-chip" style="transform: rotate(0.4deg);"><span class="hl-2-full">ORGANIZAÇÃO</span> ADMINISTRATIVA</span>
-                        <span class="keyword-chip" style="transform: rotate(-0.3deg);"><span class="hl-1-full">LEI</span> ORGÂNICA</span>
+                        <span class="keyword-chip" style="transform: rotate(-0.5deg);">ADMINISTRAÇÃO <span
+                                class="hl-2-sub">PÚB</span>LICA</span>
+                        <span class="keyword-chip" style="transform: rotate(0.4deg);"><span
+                                class="hl-2-full">ORGANIZAÇÃO</span> ADMINISTRATIVA</span>
+                        <span class="keyword-chip" style="transform: rotate(-0.3deg);"><span
+                                class="hl-1-full">LEI</span> ORGÂNICA</span>
                         <span class="keyword-chip" style="transform: rotate(0.6deg);">DESCENTRALIZAÇÃO</span>
                     </div>
                 </div>
@@ -734,7 +917,10 @@
             </div>
             <div class="card-body">
                 <p class="ementa">
-                    Concede <span class="hl-3-full" style="--hl-height: 50%">Título</span> de <span class="hl-3-sub">Cidadã</span>o Paulistano ao Senhor Exemplo de Tal, pelos relevantes serviços prestados à comunidade <span class="hl-4-sub">art</span>ística e <span class="hl-4-full" style="--hl-height: 38%">cultural</span> da cidade.
+                    Concede <span class="hl-3-full" style="--hl-height: 50%">Título</span> de <span
+                        class="hl-3-sub">Cidadã</span>o Paulistano ao Senhor Exemplo de Tal, pelos relevantes serviços
+                    prestados à comunidade <span class="hl-4-sub">art</span>ística e <span class="hl-4-full"
+                        style="--hl-height: 38%">cultural</span> da cidade.
                 </p>
             </div>
             <div class="card-footer">
@@ -747,8 +933,11 @@
                     </div>
                     <div class="keywords">
                         <span class="keyword-chip" style="transform: rotate(0.3deg);">HONRARIA</span>
-                        <span class="keyword-chip" style="transform: rotate(-0.4deg);"><span class="hl-3-full">TÍTULO</span> DE <span class="hl-3-sub">CIDADÃ</span>O PAULISTANO</span>
-                        <span class="keyword-chip" style="transform: rotate(0.2deg);"><span class="hl-4-full">CULTURA</span></span>
+                        <span class="keyword-chip" style="transform: rotate(-0.4deg);"><span
+                                class="hl-3-full">TÍTULO</span> DE <span class="hl-3-sub">CIDADÃ</span>O
+                            PAULISTANO</span>
+                        <span class="keyword-chip" style="transform: rotate(0.2deg);"><span
+                                class="hl-4-full">CULTURA</span></span>
                     </div>
                 </div>
             </div>
@@ -773,7 +962,9 @@
             </div>
             <div class="card-body">
                 <p class="ementa">
-                    Constitui Comissão Parlamentar de Inquérito (<span class="hl-5-full" style="--hl-height: 60%">CPI</span>) com a finalidade de investigar irregularidades nos contratos de <span class="hl-5-sub">trans</span>porte por aplicativos na cidade de São Paulo.
+                    Constitui Comissão Parlamentar de Inquérito (<span class="hl-5-full"
+                        style="--hl-height: 60%">CPI</span>) com a finalidade de investigar irregularidades nos
+                    contratos de <span class="hl-5-sub">trans</span>porte por aplicativos na cidade de São Paulo.
                 </p>
             </div>
             <div class="card-footer">
@@ -784,8 +975,10 @@
                         </div>
                     </div>
                     <div class="keywords">
-                        <span class="keyword-chip" style="transform: rotate(-0.3deg);"><span class="hl-5-full">CPI</span></span>
-                        <span class="keyword-chip" style="transform: rotate(0.5deg);"><span class="hl-5-sub">TRANS</span>PORTE</span>
+                        <span class="keyword-chip" style="transform: rotate(-0.3deg);"><span
+                                class="hl-5-full">CPI</span></span>
+                        <span class="keyword-chip" style="transform: rotate(0.5deg);"><span
+                                class="hl-5-sub">TRANS</span>PORTE</span>
                         <span class="keyword-chip" style="transform: rotate(-0.6deg);">APLICATIVOS</span>
                         <span class="keyword-chip" style="transform: rotate(0.2deg);">FISCALIZAÇÃO</span>
                     </div>
@@ -812,7 +1005,10 @@
             </div>
             <div class="card-body">
                 <p class="ementa">
-                    Institui a Política Municipal de Incentivo à <span class="hl-4-full" style="--hl-height: 40%">Leitura</span> e ao Livro, cria o <span class="hl-1-full" style="--hl-height: 55%">Fundo</span> Municipal do Livro, estabelece diretrizes para bibliotecas comunitárias e dá outras providências relativas à difusão cultural nas periferias.
+                    Institui a Política Municipal de Incentivo à <span class="hl-4-full"
+                        style="--hl-height: 40%">Leitura</span> e ao Livro, cria o <span class="hl-1-full"
+                        style="--hl-height: 55%">Fundo</span> Municipal do Livro, estabelece diretrizes para bibliotecas
+                    comunitárias e dá outras providências relativas à difusão cultural nas periferias.
                 </p>
             </div>
             <div class="card-footer">
@@ -835,9 +1031,11 @@
                         <span class="keyword-chip" style="transform: rotate(0.4deg);">CULTURA</span>
                         <span class="keyword-chip" style="transform: rotate(-0.3deg);">EDUCAÇÃO</span>
                         <span class="keyword-chip" style="transform: rotate(0.2deg);">LIVRO</span>
-                        <span class="keyword-chip" style="transform: rotate(-0.5deg);"><span class="hl-4-full">LEITURA</span></span>
+                        <span class="keyword-chip" style="transform: rotate(-0.5deg);"><span
+                                class="hl-4-full">LEITURA</span></span>
                         <span class="keyword-chip" style="transform: rotate(0.3deg);">BIBLIOTECA</span>
-                        <span class="keyword-chip" style="transform: rotate(-0.2deg);"><span class="hl-1-full">FUNDO</span> MUNICIPAL</span>
+                        <span class="keyword-chip" style="transform: rotate(-0.2deg);"><span
+                                class="hl-1-full">FUNDO</span> MUNICIPAL</span>
                         <span class="keyword-chip" style="transform: rotate(0.6deg);">PERIFERIA</span>
                     </div>
                 </div>
@@ -848,10 +1046,11 @@
 
     <script>
         // Busca em tempo real
-        document.querySelector('.search-input').addEventListener('input', function(e) {
+        document.querySelector('.search-input').addEventListener('input', function (e) {
             console.log('Buscando por:', e.target.value);
             // Aqui você implementaria a lógica de busca
         });
     </script>
 </body>
+
 </html>
