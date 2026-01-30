@@ -1,0 +1,54 @@
+{
+  "columns": [
+    "tipo",
+    "numero",
+    "ano",
+    "norma",
+    "ementa",
+    "promoventes",
+    "palavras-chave",
+    "searchable"
+  ],
+  "data": [
+    [
+      "PLO",
+      "05",
+      "2024",
+      "18349/2024",
+      "Altera a Lei Orgânica do Município de São Paulo para dispor sobre a organização administrativa, reestruturando as competências das subprefeituras e estabelecendo novos critérios para a descentralização da gestão pública na cidade.",
+      "JOÃO DA SILVA (MDB) | MARIA OLIVEIRA (PT)",
+      "ADMINISTRAÇÃO PÚBLICA | ORGANIZAÇÃO ADMINISTRATIVA | LEI ORGÂNICA | DESCENTRALIZAÇÃO",
+      "plo|projeto de lei orgânica|05|2024|18349/2024|altera a lei organica do municipio de sao paulo para dispor sobre a organizacao administrativa...|administracao publica organization administrativa lei organica descentralizacao|joao da silva mdb maria oliveira pt"
+    ],
+    [
+      "PDL",
+      "12",
+      "2025",
+      "",
+      "Concede Título de Cidadão Paulistano ao Senhor Exemplo de Tal, pelos relevantes serviços prestados à comunidade artística e cultural da cidade.",
+      "CARLOS SOUZA (PSDB)",
+      "HONRARIA | TÍTULO DE CIDADÃO PAULISTANO | CULTURA",
+      "pdl|projeto de decreto legislativo|12|2025||concede titulo de cidadao paulistano...|honraria titulo de cidadao paulistano cultura|carlos souza psdb"
+    ],
+    [
+      "PR",
+      "08",
+      "2024",
+      "",
+      "Constitui Comissão Parlamentar de Inquérito (CPI) com a finalidade de investigar irregularidades nos contratos de transporte por aplicativos na cidade de São Paulo.",
+      "Mesa Diretora",
+      "CPI | TRANSPORTE | APLICATIVOS | FISCALIZAÇÃO",
+      "pr|projeto de resolucao|08|2024||constitui comissao parlamentar de inquerito cpi...|cpi transporte aplicativos fiscalizacao|mesa diretora"
+    ],
+    [
+      "PL",
+      "680",
+      "2025",
+      "",
+      "Institui a Política Municipal de Incentivo à Leitura e ao Livro, cria o Fundo Municipal do Livro, estabelece diretrizes para bibliotecas comunitárias e dá outras providências relativas à difusão cultural nas periferias.",
+      "ANA PEREIRA (PSOL) | ROBERTO (NOVO) | CLAUDIA (UNIÃO)",
+      "CULTURA | EDUCAÇÃO | LIVRO | LEITURA | BIBLIOTECA | FUNDO MUNICIPAL | PERIFERIA",
+      "pl|projeto de lei|680|2025||institui a politica municipal de incentivo a leitura...|cultura educacao livro leitura biblioteca fundo municipal periferia|ana pereira psol roberto novo claudia uniao"
+    ]
+  ]
+}
