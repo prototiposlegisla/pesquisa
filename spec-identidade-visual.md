@@ -2,76 +2,77 @@
 
 Este documento define as diretrizes estéticas e comportamentais para a interface do SPLegis Busca. Qualquer novo elemento (popups, modais, tooltips, novos cards) deve seguir rigorosamente estes princípios para manter a coesão do universo visual **"Archival UI" / "Digital Stationery"**.
 
-## **1\. Conceito Central: "Gabinete de Arquivo"**
+## **1. Conceito Central: "Gabinete de Arquivo"**
 
 A interface não deve parecer um software digital moderno, mas sim um **arquivo físico bem preservado**. A metáfora visual é a de fichas de papel de alta gramatura, organizadas manualmente, com dados datilografados e anotações à mão.
 
 **Pilares:**
 
-* **Tactilidade:** Nada é perfeitamente liso ou branco absoluto (\#FFF).  
-* **Permanência:** Fontes históricas e cores de tintas de arquivo.  
-* **Imperfeição Orgânica:** Leves rotações e assimetrias que simulam o manuseio humano.
+*   **Tactilidade:** Nada é perfeitamente liso ou branco absoluto (#FFF).
+*   **Permanência:** Fontes históricas e cores de tintas de arquivo.
+*   **Imperfeição Orgânica:** Leves rotações e assimetrias que simulam o manuseio humano.
+*   **Minimalismo:** Design limpo, sem modo noturno (Dark Mode não se aplica a papel).
 
-## **2\. A Física do Papel (Superfícies)**
+## **2. A Física do Papel (Superfícies)**
 
 Os elementos de container (fundo da tela, cartões, modais) devem obedecer às seguintes leis físicas:
 
 ### **2.1. Textura e Substrato**
 
-* **Fundo Geral:** Nunca use branco puro. Use tons de creme/off-white (\#FAF9F6).  
-* **Granulação:** Aplique sempre uma textura de ruído SVG (feTurbulence) via mix-blend-mode: multiply com opacidade baixíssima (3-5%) para criar porosidade.  
-* **Iridescência (Gradientes):** Os cartões não têm cor sólida. Eles possuem um gradiente linear muito sutil (135deg) que varia a matiz (ex: de um bege quente para um bege frio, ou vinho pálido para vinho acinzentado). Isso simula a incidência complexa da luz sobre o papel.
+*   **Fundo Geral:** Nunca use branco puro. Use tons de "Off-White" / Creme (#FAF9F6) ou Cinza-gelo.
+*   **Granulação:** Aplique sempre uma textura de ruído PNG (`noise.png`) com `repeat` via `background-image` e `mix-blend-mode: multiply` com opacidade baixíssima (3-5%) para criar porosidade.
+*   **Iridescência (Gradientes):** Os cartões não têm cor sólida. Eles possuem um gradiente linear muito sutil que varia a matiz. Use o identificador do projeto como seed para randomizar levemente a cor de fundo de cada cartão, garantindo unicidade.
 
 ### **2.2. Corte de Guilhotina (Bordas)**
 
-* **Contorno:** Bordas sólidas e finas (1px), em cores muito discretas (rgba(0,0,0,0.05)).  
-* **Assimetria:** Nunca use border-radius perfeito em todos os cantos. Use valores variados para simular o corte de papel imperfeito.  
-  * *Exemplo:* border-radius: 2px 5px 2px 3px;
+*   **Contorno:** Bordas sólidas e finas (1px) em "Warm Gray" ou "Cinza Pedra" (ex: rgba(60, 50, 40, 0.08)), simulando corte intencional.
+*   **Interatividade:** No hover, a borda escurece levemente.
+*   **Assimetria:** Border-radius levemente imperfeito (ex: 2px) para evitar a aparência artificial de "app mobile".
 
 ### **2.3. Elevação (Layered Shadows)**
 
-Evite sombras "drop-shadow" simples. Use o sistema de **Sombras em Camadas** para simular a oclusão de ambiente:
+Evite sombras "drop-shadow" simples. Use o sistema de **Sombras Quentes em Camadas** para simular o "Lift" (papel levantado):
 
-1. **Umbra:** Sombra de contato, escura e nítida.  
-2. **Penumbra:** Sombra média, difusa.  
-3. **Ambiente:** Sombra larga e muito transparente.
+1.  **Umbra:** Sombra de contato (ex: `0 1px 2px rgba(60, 50, 40, 0.08)`).
+2.  **Penumbra:** Sombra média.
+3.  **Ambiente:** Sombra larga e transparente.
 
-## **3\. A Química da Tinta (Cores e Contraste)**
+*Nota:* Não usar efeito de "pressão" (active) ao clicar, para não confundir com feedback de erro.
 
-Não usamos cores digitais (hexadecimais chapados). Usamos o conceito de **"Deep Inks"**.
+## **3. A Química da Tinta (Cores e Contraste)**
+
+Abandone o preto digital (#000).
 
 ### **3.1. Regra de Mistura (Multiply)**
 
-Todo texto escuro ou colorido sobre o papel deve ter mix-blend-mode: multiply. A tinta não flutua sobre o papel; ela é absorvida por ele, escurecendo o substrato.
+Todo texto colorido ou escuro deve ter `mix-blend-mode: multiply`. Isso simula a absorção física da tinta no papel.
 
 ### **3.2. Paleta de Tintas**
 
-* **Texto Principal (Iron Gall):** \#1F2937 (Cinza Chumbo/Carvão). Nunca preto absoluto.  
-* **Anotações Manuais (Ballpoint):** \#1a237e (Azul Caneta Bic profundo).  
-* **Color Coding (Tipos Legislativos):**  
-  * **PLO:** Vinho Bordeaux (\#951D36).  
-  * **PDL:** Azul Maastricht (\#001C3D).  
-  * **PR:** Verde Hunter (\#1A4122).  
-  * **PL:** Neutro (Cinza Chumbo).
+*   **Texto Principal (Warm Charcoal):** #2D2A26 ou #3E3B39. Um preto quente com base marrom/avermelhada, simulando tinta de impressora laser antiga ou Iron Gall Ink.
+*   **Anotações Manuais:** Azul Caneta profundo ou Preto desbotado.
+*   **Color Coding (Tipos Legislativos):** O colorido é funcional, usado apenas em rótulos e bordas.
+    *   **PLO:** Tijolo / Terracota.
+    *   **PDL:** Petróleo.
+    *   **PR:** Verde.
+    *   **PL:** Sem cor marcadora (Cor de papel envelhecido apenas).
 
-### **3.3. Grifos (Marca-texto Vintage)**
+### **3.3. Grifos (Marca-texto Realista)**
 
-Para destacar termos de busca, use gradientes suaves que simulam canetas marca-texto.
+*   **Técnica:** `linear-gradient` inclinado simulando passagem manual.
+*   **Altura Variável:** O grifo não cobre a linha toda; cobre apenas a parte inferior (ex: 45% a 60%), permitindo que a tinta preta do texto se sobressaia.
+*   **Randomização:** A altura e inclinação do grifo variam levemente para cada palavra.
 
-* **Técnica:** Fundo com gradiente linear angulado (100deg) \+ mix-blend-mode: multiply. O texto mantém a cor original, sendo apenas "tingido" pelo fundo.
+## **4. Tipografia (Estética "Academic / Technical")**
 
-## **4\. Tipografia (O Stack "Arquivo Histórico")**
+Contraste entre autoridade (serifa) e precisão técnica (monospace).
 
-A tipografia é dividida por função tecnológica/histórica:
+### **4.1. Conteúdo Narrativo (Ementas)**
 
-### **4.1. Conteúdo Narrativo (Ementas, Títulos Longos)**
+*   **Fonte:** IM Fell Great Primer.
+*   **Estilo:** Serifada, histórica. Traz a "Autoridade".
 
-* **Fonte:** IM Fell Great Primer  
-* **Estilo:** Serifada, histórica (séc. XVII), textura de impressão rústica ("ink spread"), bordas irregulares.  
-* **Uso:** Traz peso histórico e autoridade ao texto da lei.  
-* **Alinhamento:** Sempre à esquerda (*Ragged Right*). Nunca justificado.
-
-### **4.2. Dados Técnicos e Interface (Botões, Metadados)**
+### **4.2. Dados Técnicos (Metadados)**
 
 * **Fonte:** Special Elite  
 * **Estilo:** Máquina de Escrever (Typewriter), monoespaçada, suja ("gritty").  
@@ -80,11 +81,12 @@ A tipografia é dividida por função tecnológica/histórica:
 
 ### **4.3. Elementos Humanos (Identificadores)**
 
-* **Fonte:** Reenie Beanie  
-* **Estilo:** Manuscrito, caneta esferográfica.  
-* **Uso:** Números dos projetos. Simula que o arquivista anotou o número à mão na ficha.
+*   **Fonte:** Reenie Beanie.
+*   **Estilo:** Manuscrito grosso (marcador/caneta porosa).
+*   **Specs:** Font-size 2.5rem, Line-height 0.8, Font-weight 600.
+*   **Rotação:** Randômica e leve em cada cartão.
 
-## **5\. Componentes e Comportamentos**
+## **5. Componentes e Comportamentos**
 
 ### **5.1. Rotação Orgânica (A "Mesa de Trabalho")**
 
@@ -99,40 +101,17 @@ Para evitar a rigidez do grid digital, elementos podem ter rotações microscóp
 * **Navegação:** Use códigos mnemônicos de 3 letras (SPL, INT) separados por barras (/).  
 * **Interação:** No hover, o texto muda para a cor da tinta do projeto.
 
-### **5.3. Palavras-Chave (Chips)**
+### **5.3. Status "Aprovado"**
 
-* **Estilo:** "Datilografia Solta". Sem bordas, sem fundo. Apenas o texto flutuando no rodapé do cartão.  
-* **Disposição:** Alinhadas à esquerda, com leve rotação individual em cada termo para simular a batida da máquina de escrever.
+*   **Espaçamento:** Grande vão entre o identificador e a ementa para acomodar o carimbo.
 
-## **6\. Resumo para Implementação (Cheat Sheet)**
+## **6. Resumo para Implementação**
 
-| Elemento | Fonte | Cor | Efeito Especial |
-| :---- | :---- | :---- | :---- |
-| **Ementa** | IM Fell Great Primer | Cinza Chumbo | Multiply, Ragged Right |
-| **Autor/Partido** | Special Elite | Cinza Chumbo | Uppercase, Multiply |
-| **Número Proj.** | Reenie Beanie | Azul Caneta | Rotação, Tamanho Grande |
-| **Links** | Special Elite | Preto Suave | Siglas 3 letras, Hover Colorido |
-| **Keywords** | Special Elite | Cinza Pedra | Rotação individual, Sem borda |
-| **Card (Papel)** | \- | Gradiente Tints | Borda Irregular, Ruído, Sombra Layered |
-
-## **7. Elementos Especiais: Status Legal**
-
-### **7.1. O "Carimbo de Borracha" (Indicadores de Status)**
-
-Para projetos convertidos em lei (APROVADO), o carimbo aparece no início da linha da norma.
-
-*   **Posição:** Primeiro elemento da linha, à esquerda.
-*   **Design:** Caixa alta, borda pesada sólida ou dupla texturizada.
-*   **Química:** `mix-blend-mode: multiply` (CRUCIAL).
-*   **Cor:** Vermelho Carimbo (#b91c1c).
-
-### **7.2. Campo Norma (Lei Convertida)**
-
-Localizado numa linha dedicada logo abaixo do Identificador do Projeto e acima da Ementa.
-
-*   **Estrutura da Linha:** [CARIMBO] + [Número/Ano] + [Botões].
-*   **Sem Prefixos:** Não usar rótulos como "Norma:" ou setas separadoras.
-*   **Número/Ano:** Fonte *Reenie Beanie* (Manuscrito).
-*   **Links:** Botões (PLP, BIB, PREF) na sequência, mesma estética do topo.
-
-
+| Elemento | Design |
+| :---- | :---- |
+| **Fundo** | Off-Wait (#FAF9F6) + Noise |
+| **Texto Base** | Warm Charcoal (#2D2A26) + Multiply |
+| **Sombra** | Tons Sépia/Quentes (rgba 60,50,40) |
+| **Metadados** | Monospace Fina + Autores em Bold |
+| **Chips** | Ghost (sem borda, sem fundo) |
+| **Grifo** | Gradiente parcial (baixo), altura randomizada |
