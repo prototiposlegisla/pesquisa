@@ -873,30 +873,17 @@ on:
 name: Atualização Semestral
 on:
   schedule:
-    - cron: '0 4 1 1,7 *'  # 4h AM em 1º janeiro e 1º julho
+    - cron: '0 4 1 7 *'  # 4h AM em 1º julho
   workflow_dispatch:
 ```
 
 **Executa:** Atualiza `medio.json`
 **Duração esperada:** 30 segundos
+**Observação:** 1º de Janeiro é coberto pela Virada de Ano
 
 ---
 
-### 7.4 Workflow: Atualização Anual
 
-```yaml
-name: Atualização Anual
-on:
-  schedule:
-    - cron: '0 4 1 1 *'  # 4h AM em 1º janeiro
-  workflow_dispatch:
-```
-
-**Executa:** Atualiza `historico-a.json` e `historico-b.json`
-**Duração esperada:** 60-90 segundos
-**Observação:** Delay de 15 segundos entre os dois blocos
-
----
 
 ### 7.5 Workflow: Virada de Ano
 
