@@ -779,3 +779,133 @@ body::before {
 .card:has(.norma-wrapper) .card-header {
     margin-bottom: 24px;
 }
+
+/* =========================================
+   CAMPO DE INFORMAÇÕES (HELP)
+   ========================================= */
+
+.info-field {
+    background: var(--paper-cream);
+    border: 1px solid var(--border-warm);
+    border-radius: 2px;
+    padding: 24px 28px;
+    margin: 16px 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    box-shadow:
+        0 1px 2px rgba(60, 50, 40, 0.06),
+        0 2px 4px rgba(60, 50, 40, 0.04);
+}
+
+.info-section {
+    margin-bottom: 20px;
+}
+
+.info-section:last-child {
+    margin-bottom: 0;
+}
+
+.info-title {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.info-field p {
+    margin: 6px 0;
+}
+
+.info-field ul {
+    margin: 8px 0 8px 20px;
+    padding: 0;
+}
+
+.info-field li {
+    margin: 4px 0;
+}
+
+.info-field code {
+    background: rgba(60, 50, 40, 0.06);
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+}
+
+/* =========================================
+   BOTÃO CARREGAR MAIS
+   ========================================= */
+
+.load-more-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    margin: 24px 0;
+    background: transparent;
+    border: 1px dashed var(--border-warm);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.load-more-btn:hover {
+    background: rgba(60, 50, 40, 0.03);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+.load-more-btn:active {
+    transform: translateY(1px);
+}
+
+/* =========================================
+   BOTÃO RECARREGAR (ERRO)
+   ========================================= */
+
+.reload-btn {
+    display: inline-block;
+    margin-left: 12px;
+    padding: 4px 12px;
+    background: transparent;
+    border: 1px solid var(--border-warm);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reload-btn:hover {
+    background: rgba(60, 50, 40, 0.05);
+    color: var(--text-primary);
+}
+
+/* =========================================
+   HIGHLIGHT CINZA (PARA TERMOS EXTRAS)
+   ========================================= */
+
+.hl-gray-full {
+    background: linear-gradient(
+        102deg,
+        transparent 0%,
+        rgba(120, 120, 120, 0.25) 3%,
+        rgba(120, 120, 120, 0.30) 50%,
+        rgba(120, 120, 120, 0.25) 97%,
+        transparent 100%
+    );
+    background-size: 100% var(--hl-height, 50%);
+    background-position: 0 95%;
+    background-repeat: no-repeat;
+    padding: 0 2px;
+    margin: 0 -2px;
+    border-radius: 1px;
+}
