@@ -102,7 +102,7 @@ body::before {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 19px;
     padding-bottom: 40px;
 }
 
@@ -172,22 +172,21 @@ body::before {
     border: none;
     border-radius: 0;
     background-color: transparent;
-    /* Estilo manuscrito */
-    font-family: var(--font-hand);
-    font-weight: 600;
+    font-family: var(--font-ui-serif);
+    font-weight: 400;
     line-height: 1.2;
-    color: var(--ink-pen-blue);
+    color: var(--text-primary);
     mix-blend-mode: multiply;
     opacity: 0.95;
     transform: rotate(-0.5deg);
-    caret-color: var(--ink-pen-blue);
+    caret-color: var(--text-primary);
 }
 
 .search-input::placeholder {
-    font-family: var(--font-hand);
+    font-family: var(--font-ui-serif);
     font-size: 2.2rem;
-    color: var(--ink-pen-blue);
-    opacity: 1;
+    color: var(--text-primary);
+    opacity: 0.5;
 }
 
 .search-input:focus {
@@ -774,6 +773,8 @@ body::before {
     opacity: 0.8;
     pointer-events: none;
     z-index: 5;
+    filter: blur(0.5px);
+    text-shadow: 1px 1px 2px rgba(214, 64, 69, 0.4);
 
     /* TEXTURA INTERNA (Estilo Stencil/Falhado) */
     /* Máscara de ruído para "corroer" a tinta */

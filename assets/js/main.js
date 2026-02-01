@@ -420,6 +420,9 @@
         for (const char of normalizedTerm) {
             if (accentMap[char]) {
                 pattern += accentMap[char];
+            } else if (/\d/.test(char)) {
+                // Se for dígito, aceita opcionalmente um ponto depois
+                pattern += char + '[\\.]?';
             } else {
                 pattern += escapeRegex(char);
             }
