@@ -894,14 +894,12 @@ body::before {
    ========================================= */
 
 .hl-gray-full {
-    background: linear-gradient(
-        102deg,
-        transparent 0%,
-        rgba(120, 120, 120, 0.25) 3%,
-        rgba(120, 120, 120, 0.30) 50%,
-        rgba(120, 120, 120, 0.25) 97%,
-        transparent 100%
-    );
+    background: linear-gradient(102deg,
+            transparent 0%,
+            rgba(120, 120, 120, 0.25) 3%,
+            rgba(120, 120, 120, 0.30) 50%,
+            rgba(120, 120, 120, 0.25) 97%,
+            transparent 100%);
     background-size: 100% var(--hl-height, 50%);
     background-position: 0 95%;
     background-repeat: no-repeat;

@@ -1,9 +1,9 @@
 /**
- * SPLegis Busca - Main JavaScript
+ * Legislasampa - Main JavaScript
  * Site de busca de projetos legislativos da Câmara Municipal de São Paulo
  */
 
-(function() {
+(function () {
     'use strict';
 
     // =========================================
@@ -654,8 +654,8 @@
 
         // Verifica se tem termos suficientes
         const hasValidTerms = query.type === 'norma' ||
-                              query.type === 'project_number' ||
-                              (query.terms && query.terms.length > 0);
+            query.type === 'project_number' ||
+            (query.terms && query.terms.length > 0);
 
         if (!hasValidTerms) {
             resultsCount.textContent = '';
@@ -674,14 +674,14 @@
 
         // Formata contagem
         if (displayedCount < total) {
-            resultsCount.innerHTML = `Mostrando ${displayedCount} de <strong>${total}</strong> resultados`;
+            resultsCount.innerHTML = ` <strong>${total}</strong> resultados`;
         } else {
             resultsCount.innerHTML = `<strong>${total}</strong> resultado${total !== 1 ? 's' : ''}`;
         }
 
         // Formata termos com highlight
         const termsHtml = highlightTermsForLog(query.originalTerms);
-        resultsTerms.innerHTML = `Termos: ${termsHtml}`;
+        resultsTerms.innerHTML = `${termsHtml}`;
     }
 
     // =========================================
@@ -950,7 +950,7 @@
         // Inicia carregamento de dados
         loadAllData();
 
-        console.log('SPLegis Busca inicializado');
+        console.log('Legislasampa inicializado');
     }
 
     // Aguarda DOM carregar
