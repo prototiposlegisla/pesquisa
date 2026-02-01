@@ -186,12 +186,39 @@ body::before {
 .input-container {
     flex: 1;
     position: relative;
+    display: flex;
+    align-items: center;
+}
+
+
+/* Ícone de busca */
+.search-icon {
+    /* position: absolute; removido para usar flex */
+    /* top, left, translateY removidos */
+    transform: rotate(-5deg);
+    margin-right: -5px;
+    /* Ajuste fino */
+    margin-left: 5px;
+    /* Margem esquerda */
+    color: var(--text-primary);
+    opacity: 0.6;
+    mix-blend-mode: multiply;
+    pointer-events: auto;
+    /* Permite clique */
+    cursor: text;
+    /* Indica que é parte do input */
+    z-index: 2;
+    flex-shrink: 0;
+    /* Não encolher o ícone */
 }
 
 .search-input {
     width: 100%;
-    padding: 5px 10px;
-    padding-bottom: 8px;
+    flex: 1;
+    /* Ocupa o espaço restante */
+    padding: 5px 10px 8px 15px;
+    /* Padding reduzido na esquerda */
+    /* Padding left aumentado para o ícone */
     font-size: 2.2rem;
     border: none;
     border-radius: 0;

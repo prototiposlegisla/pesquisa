@@ -973,6 +973,12 @@
         // Reconfigura botão limpar
         clearBtn.onclick = onClearClick;
 
+        // Foco ao clicar no ícone
+        const searchIcon = document.querySelector('.search-icon');
+        if (searchIcon) {
+            searchIcon.addEventListener('click', () => searchInput.focus());
+        }
+
         // Fecha teclado ao clicar fora
         document.addEventListener('click', onDocumentClick);
 
