@@ -490,7 +490,7 @@
             const isLei = normaTipo === 'Lei';
 
             normaWrapper.innerHTML = `
-                <div class="stamp-approved">APROVADO</div>
+                <div class="stamp-approved">PROMULGADO</div>
                 <span class="norma-number">${highlightText(norma, highlightTerms)}</span>
                 <div class="norma-links">
                     <a href="${buildPLPURL(tipo, normaNum.replace(/\./g, ''), normaAno)}" class="action-btn" title="Portal de Legislação Paulista">PLP</a>
