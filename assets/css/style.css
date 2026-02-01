@@ -875,7 +875,7 @@ body::before {
     display: block;
     width: 100%;
     padding: 16px;
-    margin: 24px 0;
+    margin: 04px 0;
     background: transparent;
     border: 1px dashed var(--border-warm);
     border-radius: 2px;

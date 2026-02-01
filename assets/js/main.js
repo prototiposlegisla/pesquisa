@@ -222,7 +222,7 @@
         // Extrai termos individuais restantes
         remaining.split(/\s+/).forEach(term => {
             const trimmedTerm = term.trim();
-            if (trimmedTerm.length >= CONFIG.MIN_SEARCH_LENGTH) {
+            if (trimmedTerm.length > 0) {
                 normalized.push({
                     value: normalizeText(trimmedTerm),
                     isPhrase: false,
@@ -365,26 +365,35 @@
 
         let result = text;
 
-        terms.forEach((term, index) => {
-            // Não grifar termos < 3 caracteres, exceto se for frase
-            if (!term.isPhrase && term.value.length < CONFIG.MIN_SEARCH_LENGTH) {
-                return;
+        // Create a single regex with capturing groups for each term: (term1)|(term2)|...
+        const patterns = terms.map(term => `(${createFlexiblePattern(term.value)})`);
+        const combinedPattern = patterns.join('|');
+        const regex = new RegExp(combinedPattern, 'gi');
+
+        return result.replace(regex, (...args) => {
+            // args: [match, p1, p2, ..., offset, string]
+            const match = args[0];
+
+            // Find which group matched (which term index)
+            // Groups start at index 1
+            let termIndex = -1;
+            for (let i = 1; i <= terms.length; i++) {
+                if (args[i] !== undefined) {
+                    termIndex = i - 1;
+                    break;
+                }
             }
 
-            const colorClass = index < HIGHLIGHT_COLORS.length
-                ? HIGHLIGHT_COLORS[index]
-                : 'hl-gray';
+            if (termIndex === -1) return match;
 
-            // Cria regex que encontra o termo ignorando acentos
-            const termPattern = createFlexiblePattern(term.value);
-            const regex = new RegExp(`(${termPattern})`, 'gi');
+            const colorClass = termIndex < HIGHLIGHT_COLORS.length
+                ? HIGHLIGHT_COLORS[termIndex]
+                : 'hl-gray';
 
             // Altura variável para efeito marca-texto
             const height = 40 + Math.random() * 20;
 
-            result = result.replace(regex, (match) => {
-                return `<span class="${colorClass}-full" style="--hl-height: ${height.toFixed(0)}%">${match}</span>`;
-            });
+            return `<span class="${colorClass}-full" style="--hl-height: ${height.toFixed(0)}%">${match}</span>`;
         });
 
         return result;
@@ -736,6 +745,24 @@
      */
     function performSearch() {
         const input = searchInput.value;
+
+        // Verifica tamanho total do input antes de qualquer coisa
+        if (input.trim().length < CONFIG.MIN_SEARCH_LENGTH) {
+            const query = { type: 'empty', terms: [], originalTerms: [] };
+            // Se tiver algo digitado mas for curto (ex: "PL"), mostra aviso
+            if (input.trim().length > 0) {
+                clearResults();
+                resultsCount.textContent = '';
+                resultsTerms.textContent = 'Digite pelo menos 3 caracteres para pesquisar';
+                return;
+            }
+            // Se estiver vazio mesmo
+            clearResults();
+            toggleInfoField(true);
+            updateResultsLog(query);
+            return;
+        }
+
         const query = parseSearchQuery(input);
 
         // Limpa se input vazio
@@ -755,12 +782,8 @@
             return;
         }
 
-        // Verifica mínimo de caracteres para busca normal
-        if (query.type === 'normal' && query.terms.length === 0) {
-            clearResults();
-            updateResultsLog(query);
-            return;
-        }
+
+
 
         // Salva termos para highlight
         currentSearchTerms = query.terms || [];
@@ -771,6 +794,17 @@
                 { value: query.projectNumber, isPhrase: false, original: query.projectNumber },
                 ...query.terms
             ];
+        }
+
+        // Se após o parse não sobrar nenhum termo válido (ex: só espaços ou caracteres ignorados)
+        if (query.type === 'normal' && query.terms.length === 0) {
+            clearResults();
+            // Mensagem genérica ou volta ao estado inicial
+            if (input.trim().length >= CONFIG.MIN_SEARCH_LENGTH) {
+                resultsCount.textContent = '';
+                resultsTerms.textContent = 'Nenhum termo válido para pesquisa';
+            }
+            return;
         }
 
         // Executa busca
@@ -885,7 +919,7 @@
     function createLoadMoreButton() {
         const btn = document.createElement('button');
         btn.className = 'load-more-btn';
-        btn.textContent = '[Carregar Mais]';
+        btn.textContent = '[carregar mais]';
         btn.style.display = 'none';
         btn.addEventListener('click', onLoadMoreClick);
         mainContainer.appendChild(btn);
