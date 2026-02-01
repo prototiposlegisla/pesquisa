@@ -559,10 +559,10 @@ body::before {
 .keywords {
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    line-height: 0.1;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    column-gap: 12px;
+    row-gap: 2px;
     width: 100%;
     justify-content: flex-start;
     text-align: left;
@@ -575,6 +575,7 @@ body::before {
     color: var(--text-secondary);
     font-weight: 400;
     mix-blend-mode: multiply;
+    line-height: 1.15;
 }
 
 .keyword-chip [class*="hl-"] {
