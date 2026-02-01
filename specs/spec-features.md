@@ -182,9 +182,9 @@ display
 							verde
 							magenta
 							laranja
-							roxo
-							vermelho
 							marrom
+							vermelho
+							roxo
 							a partir daí, faça todos os grifos cinza
 			não grifar:
 				palavras com menos de 3 letras

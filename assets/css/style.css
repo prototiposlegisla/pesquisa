@@ -42,21 +42,45 @@
     --bg-pr-end: #c5e3c7;
 
     /* CORES DE GRIFO */
-    --hl-1-start: #fde047;
-    --hl-1-end: #facc15;
-    --hl-1-sub: #fef9c3;
-    --hl-2-start: #67e8f9;
-    --hl-2-end: #22d3ee;
-    --hl-2-sub: #cffafe;
-    --hl-3-start: #f0abfc;
-    --hl-3-end: #e879f9;
-    --hl-3-sub: #f5d0fe;
-    --hl-4-start: #86efac;
-    --hl-4-end: #4ade80;
-    --hl-4-sub: #d1fae5;
-    --hl-5-start: #fdba74;
-    --hl-5-end: #fb923c;
+    /* 1. Azul Vintage (Mais claro) */
+    --hl-1-start: #36bffe;
+    --hl-1-end: #82e0ff;
+    --hl-1-sub: #eff6ff;
+
+    /* 2. Amarelo Vintage */
+    --hl-2-start: #fde047;
+    --hl-2-end: #fef08a;
+    --hl-2-sub: #fefce8;
+
+    /* 3. Verde Vintage */
+    --hl-3-start: #86efac;
+    --hl-3-end: #bbf7d0;
+    --hl-3-sub: #f0fdf4;
+
+    /* 4. Magenta Vintage */
+    --hl-4-start: #f9a8d4;
+    --hl-4-end: #fbcfe8;
+    --hl-4-sub: #fdf2f8;
+
+    /* 5. Laranja */
+    --hl-5-start: #fb923c;
+    --hl-5-end: #fdba74;
     --hl-5-sub: #ffedd5;
+
+    /* 6. Marrom */
+    --hl-6-start: #a89078;
+    --hl-6-end: #d6c0a5;
+    --hl-6-sub: #f0ebe4;
+
+    /* 7. Vermelho */
+    --hl-7-start: #ff0000bd;
+    --hl-7-end: #ff000057;
+    --hl-7-sub: #fee2e2;
+
+    /* 8. Roxo */
+    --hl-8-start: #c084fc;
+    --hl-8-end: #d8b4fe;
+    --hl-8-sub: #f3e8ff;
 }
 
 * {
@@ -642,6 +666,30 @@ body::before {
     background-image: linear-gradient(to right, var(--hl-5-sub), var(--hl-5-sub));
 }
 
+.hl-6-full {
+    background-image: linear-gradient(100deg, var(--hl-6-start), var(--hl-6-end));
+}
+
+.hl-6-sub {
+    background-image: linear-gradient(to right, var(--hl-6-sub), var(--hl-6-sub));
+}
+
+.hl-7-full {
+    background-image: linear-gradient(100deg, var(--hl-7-start), var(--hl-7-end));
+}
+
+.hl-7-sub {
+    background-image: linear-gradient(to right, var(--hl-7-sub), var(--hl-7-sub));
+}
+
+.hl-8-full {
+    background-image: linear-gradient(100deg, var(--hl-8-start), var(--hl-8-end));
+}
+
+.hl-8-sub {
+    background-image: linear-gradient(to right, var(--hl-8-sub), var(--hl-8-sub));
+}
+
 /* =========================================
    RESPONSIVIDADE
    ========================================= */
@@ -770,7 +818,7 @@ body::before {
     /* Rotação e mixagem */
     transform: rotate(-6deg);
     mix-blend-mode: multiply;
-    opacity: 0.8;
+    opacity: 0.3;
     pointer-events: none;
     z-index: 5;
     filter: blur(0.5px);
@@ -778,8 +826,8 @@ body::before {
 
     /* TEXTURA INTERNA (Estilo Stencil/Falhado) */
     /* Máscara de ruído para "corroer" a tinta */
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6'/%3E%3C/svg%3E");
+    /* -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6'/%3E%3C/svg%3E"); */
 }
 
 /* 2. NÚMERO DA NORMA */

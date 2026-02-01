@@ -43,11 +43,14 @@
     // Sequência de cores para highlight (classes CSS)
     // Ordem: ciano, amarelo, verde, magenta, laranja
     const HIGHLIGHT_COLORS = [
-        'hl-2', // ciano
-        'hl-1', // amarelo
-        'hl-4', // verde
-        'hl-3', // magenta
-        'hl-5'  // laranja
+        'hl-1', // ciano
+        'hl-2', // amarelo
+        'hl-3', // verde
+        'hl-4', // magenta
+        'hl-5', // laranja
+        'hl-6', // marrom (era roxo)
+        'hl-7', // vermelho
+        'hl-8'  // roxo (era marrom)
     ];
 
     // =========================================
