@@ -172,10 +172,12 @@
             };
         }
 
-        // Busca numérica de projeto: começa com número
-        if (/^\d+/.test(trimmed)) {
+        // Busca numérica de projeto: começa com p/P seguido de número
+        if (/^p\d+/i.test(trimmed)) {
             const parts = trimmed.split(/\s+/);
-            const projectNumber = parts[0];
+            const prefixAndNumber = parts[0]; // ex: "p123"
+            const projectNumber = prefixAndNumber.substring(1); // remove o 'p'
+
             const remainingInput = parts.slice(1).join(' ');
             const remainingTerms = parseTermsFromInput(remainingInput);
 
@@ -654,22 +656,24 @@
             return; // showLoadError já tratou
         }
 
-        // Caso de input vazio ou muito curto
+        // Caso de input vazio ou muito curto (se não for busca numérica/norma)
         if (!query || query.type === 'empty') {
             resultsCount.textContent = '';
             resultsTerms.textContent = '';
             return;
         }
 
-        // Verifica se tem termos suficientes
-        const hasValidTerms = query.type === 'norma' ||
-            query.type === 'project_number' ||
-            (query.terms && query.terms.length > 0);
-
-        if (!hasValidTerms) {
-            resultsCount.textContent = '';
-            resultsTerms.textContent = 'Digite pelo menos 3 caracteres para pesquisar';
-            return;
+        // Verifica se tem termos suficientes APENAS se for busca normal
+        if (query.type === 'normal') {
+            // Opcional: Se quiser mostrar msg de erro no log também
+            // Mas aqui geralmente já passou pelo filtro do performSearch,
+            // exceto se for chamado manualmente.
+            // Vamos manter simples.
+            if (query.terms.length === 0) {
+                resultsCount.textContent = '';
+                resultsTerms.textContent = 'Digite pelo menos 3 caracteres para pesquisar';
+                return;
+            }
         }
 
         // Mostra resultados
@@ -713,7 +717,7 @@
                 <p class="info-title">TRUQUES DE PESQUISA</p>
                 <p>O site permite truques que facilitam a busca por projetos ou normas diretamente pelo número:</p>
                 <ul>
-                    <li><strong>Busca por número do projeto:</strong> Comece a pesquisa com um número. Ex: <code>3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
+                    <li><strong>Busca por número do projeto:</strong> Comece com a letra <code>p</code> seguida do número. Ex: <code>p3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
                     <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> (minúsculo ou maiúsculo) seguido do número. Ex: <code>n18000</code> encontra o projeto que originou a norma 18000.</li>
                 </ul>
             </div>
@@ -745,31 +749,41 @@
      */
     function performSearch() {
         const input = searchInput.value;
+        const query = parseSearchQuery(input);
 
-        // Verifica tamanho total do input antes de qualquer coisa
-        if (input.trim().length < CONFIG.MIN_SEARCH_LENGTH) {
-            const query = { type: 'empty', terms: [], originalTerms: [] };
-            // Se tiver algo digitado mas for curto (ex: "PL"), mostra aviso
-            if (input.trim().length > 0) {
-                clearResults();
-                resultsCount.textContent = '';
-                resultsTerms.textContent = 'Digite pelo menos 3 caracteres para pesquisar';
-                return;
-            }
-            // Se estiver vazio mesmo
+        // Limpa se input vazio ou query vazia
+        if (query.type === 'empty') {
             clearResults();
             toggleInfoField(true);
             updateResultsLog(query);
             return;
         }
 
-        const query = parseSearchQuery(input);
+        // Verifica tamanho mínimo APENAS para busca normal
+        if (query.type === 'normal') {
+            if (input.trim().length < CONFIG.MIN_SEARCH_LENGTH) {
+                // Se tiver algo digitado mas for curto (ex: "PL"), mostra aviso
+                if (input.trim().length > 0) {
+                    clearResults();
+                    resultsCount.textContent = '';
+                    resultsTerms.textContent = 'Digite pelo menos 3 caracteres para pesquisar';
+                    return;
+                }
+                // Se estiver vazio mesmo (já capturado pelo empty, mas por segurança)
+                clearResults();
+                toggleInfoField(true);
+                updateResultsLog(query);
+                return;
+            }
+        }
 
-        // Limpa se input vazio
-        if (query.type === 'empty') {
+        // Se após o parse não sobrar nenhum termo válido para busca normal
+        if (query.type === 'normal' && query.terms.length === 0) {
             clearResults();
-            toggleInfoField(true);
-            updateResultsLog(query);
+            if (input.trim().length >= CONFIG.MIN_SEARCH_LENGTH) {
+                resultsCount.textContent = '';
+                resultsTerms.textContent = 'Nenhum termo válido para pesquisa';
+            }
             return;
         }
 
@@ -782,9 +796,6 @@
             return;
         }
 
-
-
-
         // Salva termos para highlight
         currentSearchTerms = query.terms || [];
         if (query.type === 'norma') {
@@ -794,17 +805,6 @@
                 { value: query.projectNumber, isPhrase: false, original: query.projectNumber },
                 ...query.terms
             ];
-        }
-
-        // Se após o parse não sobrar nenhum termo válido (ex: só espaços ou caracteres ignorados)
-        if (query.type === 'normal' && query.terms.length === 0) {
-            clearResults();
-            // Mensagem genérica ou volta ao estado inicial
-            if (input.trim().length >= CONFIG.MIN_SEARCH_LENGTH) {
-                resultsCount.textContent = '';
-                resultsTerms.textContent = 'Nenhum termo válido para pesquisa';
-            }
-            return;
         }
 
         // Executa busca
