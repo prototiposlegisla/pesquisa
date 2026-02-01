@@ -697,31 +697,23 @@
         info.innerHTML = `
             <div class="info-section">
                 <p class="info-title">COMO ABRIR PROJETOS</p>
-                <p>Para abrir os projetos, clique nos botões no canto superior direito dos cards:</p>
-                <ul>
-                    <li><strong>SPL</strong>: SPLegis Consulta (o SPLegis público)</li>
-                    <li><strong>INT</strong>: SPLegis Intranet</li>
-                    <li><strong>BIB</strong>: Biblioteca</li>
-                </ul>
-                <p>Caso haja uma norma decorrente do projeto, haverá botões para:</p>
-                <ul>
-                    <li><strong>PLP</strong>: Portal de Legislação Paulista</li>
-                    <li><strong>BIB</strong>: Biblioteca</li>
-                    <li><strong>PREF</strong>: Repositório da Prefeitura (apenas para Leis)</li>
-                </ul>
+                <p>Para abrir os projetos, clique nos botões no canto superior direito dos cards re resultado. São 3 repositórios: SPLegis Consulta/SPLegis Intranet/Biblioteca</p>
+                <p>Caso haja uma norma decorrente do projeto, também haverá botões próximos ao número da norma: PLP/Biblioteca/Prefeitura.</p>
             </div>
             <div class="info-section">
                 <p class="info-title">TRUQUES DE PESQUISA</p>
-                <p>O site permite truques que facilitam a busca por projetos ou normas pelo número:</p>
+                <p>O site permite truques que facilitam a busca por projetos ou normas diretamente pelo número:</p>
                 <ul>
                     <li><strong>Busca por número do projeto:</strong> Comece a pesquisa com um número. Ex: <code>3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
-                    <li><strong>Busca por número da norma:</strong> Comece com <code>n</code> seguido do número. Ex: <code>n18000</code> encontra o projeto que originou a Lei 18000.</li>
-                    <li><strong>Busca exata:</strong> Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras separadas.</li>
+                    <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> (minúsculo ou maiúsculo) seguido do número. Ex: <code>n18000</code> encontra o projeto que originou a norma 18000.</li>
                 </ul>
             </div>
             <div class="info-section">
                 <p class="info-title">INFORMAÇÕES GERAIS</p>
-                <p>A pesquisa ignora acentos e maiúsculas/minúsculas. Múltiplos termos são combinados com AND (todos devem estar presentes).</p>
+                <p>Os resultados são ordenados cronologicamente, considerando a data de protocolo, com os projetos mais recentes aparecendo primeiro.</p>
+                <p>A pesquisa é feita em todos os campos do projeto: tipo, número, ano, ementa, palavras-chave, proponente, partido do proponente,número da norma decorrente e ano da norma decorrente.</p>
+                <p>A pesquisa ignora acentos e maiúsculas/minúsculas. Múltiplos termos são combinados com AND (ou seja, todos devem estar presentes em algum campo do projeto).</p>
+                <p><strong>Busca exata:</strong> Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> separadas por outras palavras.</p>
             </div>
         `;
         return info;
