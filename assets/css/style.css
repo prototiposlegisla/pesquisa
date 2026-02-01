@@ -937,3 +937,11 @@ body::before {
     margin: 0 -2px;
     border-radius: 1px;
 }
+
+/* =========================================
+   REMOVER "X" PADRÃO DO INPUT SEARCH
+   ========================================= */
+.search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
