@@ -134,7 +134,7 @@ body::before {
    CABEÇALHO DE BUSCA
    ========================================= */
 .search-header {
-    margin-bottom: 0;
+    margin-bottom: -10px;
 }
 
 .author-message {
@@ -277,7 +277,7 @@ body::before {
     font-family: var(--font-mono);
     font-size: 0.7rem;
     color: #27272A;
-    padding: 5px 0;
+    padding: 0;
     letter-spacing: 0.15em;
     line-height: 1.6;
     display: flex;
@@ -715,8 +715,10 @@ body::before {
     }
 
     .results-log {
-        flex-direction: column;
-        gap: 4px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 8px;
         font-size: 12px;
     }
 
