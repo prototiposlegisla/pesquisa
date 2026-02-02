@@ -133,7 +133,7 @@ body::after {
     /* Gradiente radial elíptico, levemente deslocado para cima (luz zenital) */
     background: radial-gradient(ellipse at center 40%,
             transparent 30%,
-            rgba(0, 0, 0, 0.5) 100%);
+            rgba(0, 0, 0, 0.1) 100%);
 }
 
 /* =========================================
