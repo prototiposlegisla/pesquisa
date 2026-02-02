@@ -19,7 +19,7 @@
     --ink-pen-blue: #1a237e;
 
     /* TEXTURA DE PAPEL */
-    --paper-texture: url('../img/noise.png');
+    --paper-texture: url('../img/aged_paper_stains.png');
     /* Adjusted path since css is in assets/css/ and noise is in root? No, specs say assets/img usually, but let's check where noise.png is */
 
     /* ==========================================================================
@@ -112,7 +112,7 @@ body::before {
     width: 100%;
     height: 100%;
     background-image: var(--paper-texture);
-    opacity: 0.05;
+    opacity: 0.03;
     mix-blend-mode: multiply;
     pointer-events: none;
     z-index: -1;
@@ -170,7 +170,7 @@ body::before {
     position: absolute;
     inset: 0;
     background-image: var(--paper-texture);
-    opacity: 0.04;
+    opacity: 0.125;
     mix-blend-mode: multiply;
     pointer-events: none;
     z-index: 0;
@@ -348,7 +348,7 @@ body::before {
     position: absolute;
     inset: 0;
     background-image: var(--paper-texture);
-    opacity: 0.04;
+    opacity: 0.225;
     mix-blend-mode: multiply;
     pointer-events: none;
     z-index: 0;
