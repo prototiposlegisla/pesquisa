@@ -19,6 +19,33 @@
 
 <body>
 
+    <!-- Filtro SVG para efeito de carimbo realista -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
+        <defs>
+            <!-- Filtro de textura de carimbo com tinta irregular -->
+            <filter id="stamp-texture" x="-20%" y="-20%" width="140%" height="140%">
+                <!-- Ruído base para simular falhas na tinta -->
+                <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="15" result="noise"/>
+                <!-- Ajusta o contraste do ruído -->
+                <feComponentTransfer in="noise" result="noise-adjusted">
+                    <feFuncR type="linear" slope="1.5" intercept="-0.1"/>
+                    <feFuncG type="linear" slope="1.5" intercept="-0.1"/>
+                    <feFuncB type="linear" slope="1.5" intercept="-0.1"/>
+                </feComponentTransfer>
+                <!-- Combina o texto original com o ruído -->
+                <feComposite in="SourceGraphic" in2="noise-adjusted" operator="in" result="textured"/>
+                <!-- Adiciona um leve deslocamento para efeito de "pressão desigual" -->
+                <feDisplacementMap in="textured" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+                <!-- Suaviza levemente as bordas -->
+                <feGaussianBlur in="displaced" stdDeviation="0.3" result="blurred"/>
+                <!-- Aumenta o contraste final -->
+                <feComponentTransfer in="blurred">
+                    <feFuncA type="linear" slope="1.8" intercept="-0.2"/>
+                </feComponentTransfer>
+            </filter>
+        </defs>
+    </svg>
+
     <div class="main-container">
 
         <!-- =========================================
@@ -86,7 +113,7 @@
 
             <!-- LINHA DA NORMA (Carimbo + Número + Links) -->
             <div class="norma-wrapper">
-                <div class="stamp-approved">APROVADO</div>
+                <div class="stamp-approved">PROMULGADO</div>
                 <span class="norma-number">18.234/2024</span>
                 <div class="norma-links">
                     <button class="action-btn" title="Projeto de Lei Paulistano">PLP</button>
