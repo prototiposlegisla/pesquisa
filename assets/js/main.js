@@ -294,6 +294,14 @@
     // =========================================
 
     /**
+     * Formata número com pontos de milhar (ex: 18000 -> 18.000)
+     */
+    function formatWithDots(value) {
+        if (!value) return value;
+        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    /**
      * Constrói URL para SPLegis Consulta
      */
     function buildSPLegisURL(tipo, numero, ano) {
@@ -341,14 +349,15 @@
     function buildBibliotecaNormaURL(tipoProj, normaNum, normaAno) {
         const normaTipo = getNormaTipo(tipoProj);
         const tipoBib = NORMA_TIPOS_BIB[normaTipo];
+        const formattedNum = formatWithDots(normaNum);
 
         if (normaTipo === 'Lei') {
-            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${normaNum}/${normaAno}`;
+            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/${normaAno}`;
         } else if (normaTipo === 'Decreto-Legislativo') {
-            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${normaNum}/${normaAno}`;
+            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/${normaAno}`;
         } else {
             // Resolução tem formato especial
-            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${normaNum}/(6)*${normaAno}`;
+            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/(6)*${normaAno}`;
         }
     }
 
@@ -356,7 +365,8 @@
      * Constrói URL para Prefeitura (apenas Leis)
      */
     function buildPrefeituraURL(normaNum) {
-        return `https://legislacao.prefeitura.sp.gov.br/busca?nr_lei=${normaNum}`;
+        const formattedNum = formatWithDots(normaNum);
+        return `https://legislacao.prefeitura.sp.gov.br/busca?nr_lei=${formattedNum}`;
     }
 
     // =========================================
