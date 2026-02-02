@@ -795,7 +795,7 @@
                 <ul>
                     <li><strong>Busca por número do projeto:</strong> Comece com a letra <code>p</code> (minúscula ou maiúscula) seguida do número. Ex: <code>p3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
                     <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> seguido do número. Ex: <code>n18000</code>.</li>
-                    <li><strong>Apenas projetos com norma promulgada:</strong> Comece com a letra <code>n</code> (minúscula ou maiúscula) seguida de espaço. Ex: <code>n educ</code> encontra projetos que contenham "educ" e viraram norma.</li>
+                    <li><strong>Apenas projetos com norma promulgada: </strong>Comece com a letra <code>n</code> (minúscula ou maiúscula) seguida de espaço. Ex: <code>n educ</code> encontra projetos que contenham "educ" e viraram norma.</li>
                 </ul>
             </div>
             <div class="info-section">
