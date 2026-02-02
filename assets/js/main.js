@@ -165,13 +165,21 @@
             return { type: 'empty', terms: [], originalTerms: [] };
         }
 
-        // Busca por norma: começa com n/N seguido de número (ex: n1000)
+        // Busca por norma: começa com n/N seguido de número (ex: n1000 ou n1000 educ)
         if (/^n\d+/i.test(trimmed)) {
-            const normaNumber = normalized.substring(1);
+            // Extrai número da norma e o resto
+            const match = trimmed.match(/^n(\d+)(.*)/i);
+            const normaNumber = match[1];
+            const remainingInput = match[2];
+
+            // Se houver texto restante, parseia como termos
+            // Mas mantém type='norma' para filtrar pelo número exato da norma
+            const parsed = parseTermsFromInput(remainingInput || '');
+
             return {
                 type: 'norma',
                 normaNumber: normaNumber,
-                terms: [],
+                terms: parsed.normalized,
                 originalTerms: [trimmed]
             };
         }
@@ -278,12 +286,22 @@
 
         // Busca por norma
         if (query.type === 'norma') {
-            return allData.filter(row => {
+            let results = allData.filter(row => {
                 const norma = row[3]; // índice 3 = norma
                 if (!norma) return false;
                 const normaNum = norma.split('/')[0].replace(/\./g, '');
                 return normaNum === query.normaNumber;
             });
+
+            // Aplica termos adicionais se existirem
+            if (query.terms && query.terms.length > 0) {
+                results = results.filter(row => {
+                    const searchable = row[7]; // índice 7 = searchable
+                    return query.terms.every(term => searchable.includes(term.value));
+                });
+            }
+
+            return results;
         }
 
         // Busca numérica de projeto
@@ -777,7 +795,7 @@
                 <ul>
                     <li><strong>Busca por número do projeto:</strong> Comece com a letra <code>p</code> (minúscula ou maiúscula) seguida do número. Ex: <code>p3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
                     <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> seguido do número. Ex: <code>n18000</code>.</li>
-                    <li><strong>Filtro de norma:</strong> Comece com a letra <code>n</code> seguida de espaço. Ex: <code>n educ</code> encontra projetos sobre educação que viraram norma.</li>
+                    <li><strong>Apenas projetos com norma promulgada:</strong> Comece com a letra <code>n</code> (minúscula ou maiúscula) seguida de espaço. Ex: <code>n educ</code> encontra projetos que contenham "educ" e viraram norma.</li>
                 </ul>
             </div>
             <div class="info-section">
@@ -858,7 +876,10 @@
         // Salva termos para highlight
         currentSearchTerms = query.terms || [];
         if (query.type === 'norma') {
-            currentSearchTerms = [{ value: query.normaNumber, isPhrase: false, original: query.normaNumber }];
+            currentSearchTerms = [
+                { value: query.normaNumber, isPhrase: false, original: query.normaNumber },
+                ...(query.terms || [])
+            ];
         } else if (query.type === 'project_number') {
             currentSearchTerms = [
                 { value: query.projectNumber, isPhrase: false, original: query.projectNumber },
