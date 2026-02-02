@@ -376,9 +376,9 @@ body::after {
 }
 
 .card:hover {
-    transform: translateY(-4px) rotate(var(--card-rotation, 0deg));
+    /* transform: translateY(-4px) rotate(var(--card-rotation, 0deg)); */
     border-color: rgba(0, 0, 0, 0.1);
-    z-index: 10;
+    /* z-index: 10; */
     box-shadow:
         0 4px 8px rgba(0, 0, 0, 0.06),
         0 12px 24px rgba(0, 0, 0, 0.04),
