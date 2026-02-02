@@ -85,6 +85,7 @@
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\.(?=\d{3})/g, '') // Remove pontos de milhar (ex: 10.000 -> 10000)
             .trim();
     }
 
