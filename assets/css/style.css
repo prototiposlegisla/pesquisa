@@ -667,6 +667,7 @@ body::after {
     /* font-weight: 600; */
     color: inherit;
     padding: 0 2px;
+    margin: 0 -2px;
     border-radius: 0;
     mix-blend-mode: multiply;
 
