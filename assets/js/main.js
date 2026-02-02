@@ -804,6 +804,8 @@
                 <p>A pesquisa é feita em todos os campos do projeto: tipo, número, ano, ementa, palavras-chave, proponente, partido do proponente, número da norma decorrente e ano da norma decorrente.</p>
                 <p>A pesquisa ignora acentos e maiúsculas/minúsculas. Múltiplos termos são combinados com AND (ou seja, todos devem estar presentes, ainda que em campos diferentes do projeto).</p>
                 <p><strong>Busca exata:</strong> Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> separadas por outras palavras.</p>
+                <p>Veja também minha ferramenta para abrir projetos e normas diretamente pelo número: <a
+                        href="https://prototiposlegisla.github.io/abrir-projetos/">Link</a></p>
             </div>
         `;
         return info;
