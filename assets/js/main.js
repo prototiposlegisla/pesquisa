@@ -165,7 +165,7 @@
             return { type: 'empty', terms: [], originalTerms: [] };
         }
 
-        // Busca por norma: começa com n/N seguido de número
+        // Busca por norma: começa com n/N seguido de número (ex: n1000)
         if (/^n\d+/i.test(trimmed)) {
             const normaNumber = normalized.substring(1);
             return {
@@ -173,6 +173,29 @@
                 normaNumber: normaNumber,
                 terms: [],
                 originalTerms: [trimmed]
+            };
+        }
+
+        // Busca com filtro de norma: começa com n/N sozinho (ex: n educ)
+        if (/^n\s+/i.test(trimmed) || normalized === 'n') {
+            const remainingInput = trimmed.substring(1).trim(); // remove o 'n'
+
+            // Se for só 'n', busca tudo que tem norma
+            if (!remainingInput) {
+                return {
+                    type: 'normal',
+                    terms: [],
+                    originalTerms: ['[COM NORMA]'],
+                    requireNorma: true
+                };
+            }
+
+            const parsed = parseTermsFromInput(remainingInput);
+            return {
+                type: 'normal',
+                terms: parsed.normalized,
+                originalTerms: parsed.original,
+                requireNorma: true
             };
         }
 
@@ -279,11 +302,23 @@
         }
 
         // Busca normal - todos os termos devem estar presentes (AND)
+        // Se query.requireNorma for true, filtramos também por presença de norma
+
+        let initialData = allData;
+
+        if (query.requireNorma) {
+            initialData = allData.filter(row => row[3]); // row[3] é norma
+        }
+
         if (query.terms.length === 0) {
+            // Se for busca apenas por "n" (requireNorma=true e sem termos), retorna todos com norma
+            if (query.requireNorma) {
+                return initialData;
+            }
             return [];
         }
 
-        return allData.filter(row => {
+        return initialData.filter(row => {
             const searchable = row[7];
             return query.terms.every(term => searchable.includes(term.value));
         });
@@ -741,7 +776,8 @@
                 <p>O site permite truques que facilitam a busca por projetos ou normas diretamente pelo número:</p>
                 <ul>
                     <li><strong>Busca por número do projeto:</strong> Comece com a letra <code>p</code> (minúscula ou maiúscula) seguida do número. Ex: <code>p3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
-                    <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> (minúscula ou maiúscula) seguido do número. Ex: <code>n18000</code> encontra o projeto que originou a norma 18000.</li>
+                    <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> seguido do número. Ex: <code>n18000</code>.</li>
+                    <li><strong>Filtro de norma:</strong> Comece com a letra <code>n</code> seguida de espaço. Ex: <code>n educ</code> encontra projetos sobre educação que viraram norma.</li>
                 </ul>
             </div>
             <div class="info-section">
