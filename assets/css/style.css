@@ -1035,3 +1035,73 @@ body::before {
     -webkit-appearance: none;
     appearance: none;
 }
+
+/* =========================================
+   BOTÃO VOLTAR AO TOPO
+   ========================================= */
+
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 44px;
+    height: 44px;
+    background: #6b6b6b;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease,
+        transform 0.3s ease,
+        background-color 0.2s ease;
+    z-index: 1000;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.15),
+        0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: #505050;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.back-to-top:active {
+    transform: scale(0.95);
+    background: #404040;
+}
+
+.back-to-top svg {
+    width: 20px;
+    height: 20px;
+    color: #f5f5f5;
+    stroke-width: 2.5;
+}
+
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .back-to-top svg {
+        width: 18px;
+        height: 18px;
+    }
+}

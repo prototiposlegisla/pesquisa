@@ -1002,11 +1002,48 @@
         console.log('Legislasampa inicializado');
     }
 
+    // =========================================
+    // MÓDULO: BOTÃO VOLTAR AO TOPO
+    // =========================================
+
+    function initBackToTop() {
+        const backToTopBtn = document.querySelector('.back-to-top');
+        if (!backToTopBtn) return;
+
+        // Mostra/esconde botão baseado no scroll
+        function toggleBackToTop() {
+            if (window.scrollY > 400) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        }
+
+        // Scroll suave ao topo
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Event listeners
+        window.addEventListener('scroll', toggleBackToTop, { passive: true });
+        backToTopBtn.addEventListener('click', scrollToTop);
+
+        // Verifica estado inicial
+        toggleBackToTop();
+    }
+
     // Aguarda DOM carregar
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            initBackToTop();
+        });
     } else {
         init();
+        initBackToTop();
     }
 
 })();
