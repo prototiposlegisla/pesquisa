@@ -1,5 +1,5 @@
 /**
- * Legislasampa - Main JavaScript
+ * LEISP - Main JavaScript
  * Site de busca de projetos legislativos da Câmara Municipal de São Paulo
  */
 
@@ -1064,7 +1064,7 @@
         // Inicia carregamento de dados
         loadAllData();
 
-        console.log('Legislasampa inicializado');
+        console.log('LEISP inicializado');
     }
 
     // =========================================
