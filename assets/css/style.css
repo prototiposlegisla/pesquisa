@@ -45,17 +45,17 @@
     /* CORES DE GRIFO */
     /* 1. Azul Vintage (Mais claro) */
     --hl-1-start: #7bbdff;
-    --hl-1-end: #a7eaf4be;
+    --hl-1-end: #7bbdff4a;
     --hl-1-sub: #eff6ff;
 
     /* 2. Amarelo Vintage */
-    --hl-2-start: #fde047;
-    --hl-2-end: #fef08a;
+    --hl-2-start: #fdee47;
+    --hl-2-end: #fdee4753;
     --hl-2-sub: #fefce8;
 
     /* 3. Verde Vintage */
-    --hl-3-start: #86efac;
-    --hl-3-end: #bbf7d0;
+    --hl-3-start: #8ae892;
+    --hl-3-end: #8ae89256;
     --hl-3-sub: #f0fdf4;
 
     /* 4. Magenta Vintage */
