@@ -873,7 +873,7 @@
                 <ul>
                     <li><strong>Busca por número do projeto:</strong> Comece com a letra <code>p</code> (minúscula ou maiúscula) seguida do número. Ex: <code>p3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
                     <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> seguido do número. Ex: <code>n18000</code>.</li>
-                    <li><strong>Apenas projetos com norma promulgada: </strong>Comece com a letra <code>n</code> (minúscula ou maiúscula) seguida de espaço. Ex: <code>n educ</code> encontra projetos que contenham "educ" e viraram norma.</li>
+                    <li><strong>Para buscar apenas projetos com norma promulgada: </strong>Comece com a letra <code>n</code> (minúscula ou maiúscula) seguida de espaço. Ex: <code>n educ</code> encontra projetos que contenham "educ" e viraram norma.</li>
                 </ul>
             </div>
             <div class="info-section">
@@ -881,7 +881,7 @@
                 <p>Os resultados são ordenados cronologicamente, considerando a data de protocolo, com os projetos mais recentes aparecendo primeiro.</p>
                 <p>A pesquisa é feita em todos os campos do projeto: tipo, número, ano, ementa, palavras-chave, proponente, partido do proponente, número da norma decorrente e ano da norma decorrente.</p>
                 <p>A pesquisa ignora acentos e maiúsculas/minúsculas. Múltiplos termos são combinados com AND (ou seja, todos devem estar presentes, ainda que em campos diferentes do projeto).</p>
-                <p><strong>Busca exata:</strong> Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> separadas por outras palavras.</p>
+                <p>Busca exata: Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> separadas por outras palavras.</p>
                 <p>Veja também minha ferramenta para abrir projetos e normas diretamente pelo número: <a
                         href="https://prototiposlegisla.github.io/abrir-projetos/">Link</a></p>
             </div>
