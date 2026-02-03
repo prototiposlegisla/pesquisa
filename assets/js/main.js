@@ -12,7 +12,7 @@
 
     const CONFIG = {
         RESULTS_PER_PAGE: 25,
-        DEBOUNCE_MS: 100,
+        DEBOUNCE_MS: 0o30,
         MIN_SEARCH_LENGTH: 3,
         DATA_FILES: [
             './dados/atual.json',
@@ -975,13 +975,7 @@
     // INICIALIZAÇÃO
     // =========================================
 
-    /**
-     * Remove cards mockup do HTML
-     */
-    function removeMockupCards() {
-        const mockupCards = mainContainer.querySelectorAll('.card');
-        mockupCards.forEach(card => card.remove());
-    }
+
 
     /**
      * Configura o input de busca
@@ -1025,8 +1019,7 @@
             return;
         }
 
-        // Remove cards mockup
-        removeMockupCards();
+
 
         // Configura input
         setupSearchInput();
