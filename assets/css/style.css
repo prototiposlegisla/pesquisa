@@ -26,20 +26,11 @@
        QUÍMICA DA TINTA (DEEP INKS)
        ========================================================================== */
 
+
     --color-pl: var(--text-primary);
     --color-plo: #951D36;
     --color-pdl: #001C3D;
     --color-pr: #1A4122;
-
-    /* GRADIENTES CROMÁTICOS */
-    --bg-pl-start: #efe1cd;
-    --bg-pl-end: #EFE6CD;
-    --bg-plo-start: #e5c8cf;
-    --bg-plo-end: #e5c8d6;
-    --bg-pdl-start: #c5cde3;
-    --bg-pdl-end: #c5d5e3;
-    --bg-pr-start: #cfe3c5;
-    --bg-pr-end: #c5e3c7;
 
     /* CORES DE GRIFO */
     /* 1. Azul Vintage (Mais claro) */
@@ -149,7 +140,7 @@ body::before {
 
 /* SEARCH-BOX: Vinculada ao estilo do card PL */
 .search-box {
-    background: linear-gradient(135deg, var(--bg-pl-start), var(--bg-pl-end));
+    background: linear-gradient(135deg, #efe1cd, #EFE6CD);
     padding: 16px 20px;
     border-radius: 2px;
     margin-bottom: 9px;
@@ -328,7 +319,7 @@ body::before {
    ESTRUTURA DO CARD
    ========================================= */
 .card {
-    background: linear-gradient(135deg, var(--bg-pl-start), var(--bg-pl-end));
+    /* background aplicado via JS com gradient único por card */
     border-radius: 2px 5px 2px 3px;
     padding: 16px 20px;
     position: relative;
@@ -373,7 +364,7 @@ body::before {
 
 /* PLO */
 .card[data-type="PLO"] {
-    background: linear-gradient(135deg, var(--bg-plo-start), var(--bg-plo-end));
+    /* background aplicado via JS */
     box-shadow: 0 1px 2px rgba(149, 29, 54, 0.08), 0 4px 8px rgba(149, 29, 54, 0.04), 0 12px 24px rgba(149, 29, 54, 0.02);
 }
 
@@ -392,7 +383,7 @@ body::before {
 
 /* PDL */
 .card[data-type="PDL"] {
-    background: linear-gradient(135deg, var(--bg-pdl-start), var(--bg-pdl-end));
+    /* background aplicado via JS */
     box-shadow: 0 1px 2px rgba(0, 28, 61, 0.08), 0 4px 8px rgba(0, 28, 61, 0.04), 0 12px 24px rgba(0, 28, 61, 0.02);
 }
 
@@ -411,7 +402,7 @@ body::before {
 
 /* PR */
 .card[data-type="PR"] {
-    background: linear-gradient(135deg, var(--bg-pr-start), var(--bg-pr-end));
+    /* background aplicado via JS */
     box-shadow: 0 1px 2px rgba(26, 65, 34, 0.08), 0 4px 8px rgba(26, 65, 34, 0.04), 0 12px 24px rgba(26, 65, 34, 0.02);
 }
 

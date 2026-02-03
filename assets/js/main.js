@@ -54,6 +54,79 @@
         'hl-8'  // roxo (era marrom)
     ];
 
+    // Limites de cores para gradients por tipo de card
+    const GRADIENT_LIMITS = {
+        'PL': { start: '#efe1cd', end: '#EFE6CD' },
+        'PLO': { start: '#e5c8cf', end: '#e5c8d6' },
+        'PDL': { start: '#c5cde3', end: '#c5d5e3' },
+        'PR': { start: '#cfe3c5', end: '#c5e3c7' }
+    };
+
+    // =========================================
+    // MÓDULO: GRADIENT ALEATÓRIO COM SEED
+    // =========================================
+
+    /**
+     * Gerador de números aleatórios determinístico (Mulberry32)
+     */
+    function seededRandom(seed) {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+
+    /**
+     * Cria seed único a partir do ID do card
+     */
+    function createSeedFromId(tipo, numero, ano) {
+        const typeCode = TYPE_CODES[tipo] || 0;
+        return typeCode * 1000000 + parseInt(ano) * 10000 + parseInt(numero);
+    }
+
+    /**
+     * Interpola entre duas cores hex
+     */
+    function interpolateColor(color1, color2, factor) {
+        const hex2rgb = (hex) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return [r, g, b];
+        };
+
+        const rgb2hex = (r, g, b) => {
+            return '#' + [r, g, b].map(x =>
+                Math.round(x).toString(16).padStart(2, '0')
+            ).join('');
+        };
+
+        const [r1, g1, b1] = hex2rgb(color1);
+        const [r2, g2, b2] = hex2rgb(color2);
+
+        return rgb2hex(
+            r1 + (r2 - r1) * factor,
+            g1 + (g2 - g1) * factor,
+            b1 + (b2 - b1) * factor
+        );
+    }
+
+    /**
+     * Gera gradient único para um card baseado em seu ID
+     */
+    function generateCardGradient(tipo, numero, ano) {
+        const typeLimit = GRADIENT_LIMITS[tipo] || GRADIENT_LIMITS['PL'];
+        const seed = createSeedFromId(tipo, numero, ano);
+
+        const factor1 = seededRandom(seed);
+        const factor2 = seededRandom(seed + 1);
+
+        const color1 = interpolateColor(typeLimit.start, typeLimit.end, factor1);
+        const color2 = interpolateColor(typeLimit.start, typeLimit.end, factor2);
+
+        return `linear-gradient(135deg, ${color1}, ${color2})`;
+    }
+
     // =========================================
     // ESTADO
     // =========================================
@@ -525,6 +598,10 @@
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.type = tipo;
+
+        // Gradient único baseado no ID do card
+        const gradient = generateCardGradient(tipo, numero, ano);
+        card.style.background = gradient;
 
         // Rotação fixa baseada no índice
         const rotation = CONFIG.CARD_ROTATIONS[index % CONFIG.CARD_ROTATIONS.length];
