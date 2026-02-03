@@ -20,7 +20,8 @@
             './dados/medio.json',
             './dados/historico-a.json',
             './dados/historico-b.json'
-        ]
+        ],
+        CARD_ROTATIONS: [-0.4, 0.3, -0.2, 0.5, -0.3, 0.2, -0.5, 0.4]
     };
 
     // Mapeamento de tipos de projeto para códigos da URL
@@ -518,15 +519,15 @@
     /**
      * Cria elemento de card para um projeto
      */
-    function createCard(row, highlightTerms) {
+    function createCard(row, highlightTerms, index) {
         const [tipo, numero, ano, norma, ementa, promoventes, palavrasChave] = row;
 
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.type = tipo;
 
-        // Rotação aleatória para efeito visual
-        const rotation = (Math.random() * 0.8 - 0.4).toFixed(2);
+        // Rotação fixa baseada no índice
+        const rotation = CONFIG.CARD_ROTATIONS[index % CONFIG.CARD_ROTATIONS.length];
         card.style.setProperty('--card-rotation', `${rotation}deg`);
         card.style.transform = `rotate(var(--card-rotation))`;
 
@@ -678,8 +679,8 @@
         // Usa DocumentFragment para performance
         const fragment = document.createDocumentFragment();
 
-        slice.forEach(row => {
-            const card = createCard(row, currentSearchTerms);
+        slice.forEach((row, index) => {
+            const card = createCard(row, currentSearchTerms, displayedCount + index);
             fragment.appendChild(card);
         });
 
