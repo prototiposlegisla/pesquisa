@@ -12,7 +12,7 @@
 
     const CONFIG = {
         RESULTS_PER_PAGE: 25,
-        DEBOUNCE_MS: 300,
+        DEBOUNCE_MS: 100,
         MIN_SEARCH_LENGTH: 3,
         DATA_FILES: [
             './dados/atual.json',
