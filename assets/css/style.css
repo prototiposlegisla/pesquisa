@@ -42,46 +42,23 @@
     --bg-pr-start: #cfe3c5;
     --bg-pr-end: #c5e3c7;
 
-    /* CORES DE GRIFO */
-    /* 1. Azul Vintage (Mais claro) */
-    --hl-1-start: #7bbdff;
-    --hl-1-end: #7bbdff4a;
-    --hl-1-sub: #eff6ff;
-
-    /* 2. Amarelo Vintage */
-    --hl-2-start: #fdee47;
-    --hl-2-end: #fdee4753;
-    --hl-2-sub: #fefce8;
-
-    /* 3. Verde Vintage */
-    --hl-3-start: #8ae892;
-    --hl-3-end: #8ae89256;
-    --hl-3-sub: #f0fdf4;
-
-    /* 4. Magenta Vintage */
-    --hl-4-start: #f9a8d4;
-    --hl-4-end: #fbcfe8;
-    --hl-4-sub: #fdf2f8;
-
-    /* 5. Laranja */
-    --hl-5-start: #fb923c;
-    --hl-5-end: #fdba74;
-    --hl-5-sub: #ffedd5;
-
-    /* 6. Marrom */
-    --hl-6-start: #a89078;
-    --hl-6-end: #d6c0a5;
-    --hl-6-sub: #f0ebe4;
-
-    /* 7. Vermelho */
-    --hl-7-start: #ff0000bd;
-    --hl-7-end: #ff000057;
-    --hl-7-sub: #fee2e2;
-
-    /* 8. Roxo */
-    --hl-8-start: #c084fc;
-    --hl-8-end: #d8b4fe;
-    --hl-8-sub: #f3e8ff;
+    /* CORES DE GRIFO - FUNCIONAL VIBRANTE */
+    --hl-1: #26e2ff;
+    /* Ciano elétrico */
+    --hl-6: #ffe524;
+    /* Amarelo vivo */
+    --hl-3: #50f556;
+    /* Verde limão */
+    --hl-2: #ff67b6;
+    /* Pink vibrante */
+    --hl-4: #fb923c;
+    /* Laranja vivo */
+    --hl-8: #b08e5c;
+    /* Marrom quente */
+    --hl-7: #ff0000a6;
+    /* Vermelho vivo */
+    --hl-5: #a78bfa;
+    /* Violeta */
 }
 
 * {
@@ -645,89 +622,50 @@ body::before {
 }
 
 /* =========================================
-   ESTILOS DE GRIFO
+   ESTILOS DE GRIFO - FUNCIONAL
    ========================================= */
-[class*="-full"],
-[class*="-sub"] {
-    /* font-weight: 600; */
+[class*="hl-"][class*="-full"] {
     color: inherit;
-    padding: 0 2px;
-    margin: 0 -2px;
-    border-radius: 0;
-    mix-blend-mode: multiply;
-
-    background-repeat: no-repeat;
-    background-position: 0 88%;
-
-    --hl-height: 45%;
-    background-size: 100% var(--hl-height);
-
+    padding: 0 0px;
+    border-radius: 0px;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
 }
 
 .hl-1-full {
-    background-image: linear-gradient(100deg, var(--hl-1-start), var(--hl-1-end));
-}
-
-.hl-1-sub {
-    background-image: linear-gradient(to right, var(--hl-1-sub), var(--hl-1-sub));
+    background-color: var(--hl-1);
 }
 
 .hl-2-full {
-    background-image: linear-gradient(100deg, var(--hl-2-start), var(--hl-2-end));
-}
-
-.hl-2-sub {
-    background-image: linear-gradient(to right, var(--hl-2-sub), var(--hl-2-sub));
+    background-color: var(--hl-2);
 }
 
 .hl-3-full {
-    background-image: linear-gradient(100deg, var(--hl-3-start), var(--hl-3-end));
-}
-
-.hl-3-sub {
-    background-image: linear-gradient(to right, var(--hl-3-sub), var(--hl-3-sub));
+    background-color: var(--hl-3);
 }
 
 .hl-4-full {
-    background-image: linear-gradient(100deg, var(--hl-4-start), var(--hl-4-end));
-}
-
-.hl-4-sub {
-    background-image: linear-gradient(to right, var(--hl-4-sub), var(--hl-4-sub));
+    background-color: var(--hl-4);
 }
 
 .hl-5-full {
-    background-image: linear-gradient(100deg, var(--hl-5-start), var(--hl-5-end));
-}
-
-.hl-5-sub {
-    background-image: linear-gradient(to right, var(--hl-5-sub), var(--hl-5-sub));
+    background-color: var(--hl-5);
 }
 
 .hl-6-full {
-    background-image: linear-gradient(100deg, var(--hl-6-start), var(--hl-6-end));
-}
-
-.hl-6-sub {
-    background-image: linear-gradient(to right, var(--hl-6-sub), var(--hl-6-sub));
+    background-color: var(--hl-6);
 }
 
 .hl-7-full {
-    background-image: linear-gradient(100deg, var(--hl-7-start), var(--hl-7-end));
-}
-
-.hl-7-sub {
-    background-image: linear-gradient(to right, var(--hl-7-sub), var(--hl-7-sub));
+    background-color: var(--hl-7);
 }
 
 .hl-8-full {
-    background-image: linear-gradient(100deg, var(--hl-8-start), var(--hl-8-end));
+    background-color: var(--hl-8);
 }
 
-.hl-8-sub {
-    background-image: linear-gradient(to right, var(--hl-8-sub), var(--hl-8-sub));
+.hl-gray-full {
+    background-color: #a3a3a3;
 }
 
 /* =========================================
@@ -1021,24 +959,6 @@ body::before {
     color: var(--text-primary);
 }
 
-/* =========================================
-   HIGHLIGHT CINZA (PARA TERMOS EXTRAS)
-   ========================================= */
-
-.hl-gray-full {
-    background: linear-gradient(102deg,
-            transparent 0%,
-            rgba(120, 120, 120, 0.25) 3%,
-            rgba(120, 120, 120, 0.30) 50%,
-            rgba(120, 120, 120, 0.25) 97%,
-            transparent 100%);
-    background-size: 100% var(--hl-height, 50%);
-    background-position: 0 95%;
-    background-repeat: no-repeat;
-    padding: 0 2px;
-    margin: 0 -2px;
-    border-radius: 1px;
-}
 
 /* =========================================
    REMOVER "X" PADRÃO DO INPUT SEARCH

@@ -460,10 +460,7 @@
                 ? HIGHLIGHT_COLORS[termIndex]
                 : 'hl-gray';
 
-            // Altura variável para efeito marca-texto
-            const height = 40 + Math.random() * 20;
-
-            return `<span class="${colorClass}-full" style="--hl-height: ${height.toFixed(0)}%">${match}</span>`;
+            return `<span class="${colorClass}-full">${match}</span>`;
         });
 
         return result;
@@ -508,7 +505,7 @@
                 ? HIGHLIGHT_COLORS[index]
                 : 'hl-gray';
             const displayTerm = term.original || term.value || term;
-            return `<span class="${colorClass}-full" style="--hl-height: 50%">${displayTerm.toUpperCase()}</span>`;
+            return `<span class="${colorClass}-full">${displayTerm.toUpperCase()}</span>`;
         }).join(' + ');
     }
 

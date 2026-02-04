@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\index.html\")"
+    ]
+  }
+}
