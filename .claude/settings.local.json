@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(start \"\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\index.html\")"
+      "Bash(start \"\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\index.html\")",
+      "Bash(node test-search.js:*)",
+      "Bash(node -e:*)",
+      "Bash(node test-falso-positivo.js:*)",
+      "Bash(node:*)"
     ]
   }
 }
