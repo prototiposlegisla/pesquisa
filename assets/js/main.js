@@ -235,14 +235,14 @@
     }
 
     /**
-     * Extrai termos e frases entre aspas do input
+     * Extrai termos e frases entre aspas do input e números barra ano
      */
     function parseTermsFromInput(input) {
         const normalized = [];
         const original = [];
         let remaining = input;
 
-        // Extrai frases entre aspas
+        // 1. Extrai frases entre aspas
         const quoteRegex = /"([^"]+)"/g;
         let match;
 
@@ -257,7 +257,34 @@
             remaining = remaining.replace(match[0], ' ');
         }
 
-        // Extrai termos individuais restantes
+        // 2. Extrai padrões número/número (ex: 13.019/2014, 1/2025)
+        // Regex: números (com pontos opcionais) / números
+        const numSlashNumRegex = /\b(\d+(?:\.\d+)*)\s*\/\s*(\d+)\b/g;
+        while ((match = numSlashNumRegex.exec(remaining)) !== null) {
+            const fullMatch = match[0];
+            const partA = normalizeText(match[1]); // remove pontos
+            const partB = normalizeText(match[2]);
+
+            // Cria regex para busca estrita:
+            // (?:^|\D) -> Início ou não-dígito
+            // partA -> Primeiro número
+            // [\W_]* -> Separadores opcionais (espaço, pipe, slash, etc)
+            // partB -> Segundo número
+            // (?:$|\D) -> Fim ou não-dígito
+            const searchPattern = new RegExp(`(?:^|\\D)${partA}[\\W_]*${partB}(?:$|\\D)`, 'i');
+
+            normalized.push({
+                value: fullMatch, // Valor para referência
+                isRegex: true,
+                searchValue: searchPattern,
+                original: fullMatch
+            });
+            original.push(fullMatch);
+            // Substitui por espaços para não processar os números novamente
+            remaining = remaining.replace(fullMatch, ' ');
+        }
+
+        // 3. Extrai termos individuais restantes
         remaining.split(/\s+/).forEach(term => {
             const trimmedTerm = term.trim();
             if (trimmedTerm.length > 0) {
@@ -298,7 +325,7 @@
             if (query.terms && query.terms.length > 0) {
                 results = results.filter(row => {
                     const searchable = row[7]; // índice 7 = searchable
-                    return query.terms.every(term => searchable.includes(term.value));
+                    return checkTermsMatch(searchable, query.terms);
                 });
             }
 
@@ -313,7 +340,7 @@
             if (query.terms.length > 0) {
                 results = results.filter(row => {
                     const searchable = row[7]; // índice 7 = searchable
-                    return query.terms.every(term => searchable.includes(term.value));
+                    return checkTermsMatch(searchable, query.terms);
                 });
             }
 
@@ -339,7 +366,19 @@
 
         return initialData.filter(row => {
             const searchable = row[7];
-            return query.terms.every(term => searchable.includes(term.value));
+            return checkTermsMatch(searchable, query.terms);
+        });
+    }
+
+    /**
+     * Verifica se todos os termos dão match no texto pesquisável
+     */
+    function checkTermsMatch(searchable, terms) {
+        return terms.every(term => {
+            if (term.isRegex) {
+                return term.searchValue.test(searchable);
+            }
+            return searchable.includes(term.value);
         });
     }
 
