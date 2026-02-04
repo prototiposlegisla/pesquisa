@@ -57,7 +57,7 @@
     /* Marrom quente */
     --hl-7: #ff0000a6;
     /* Vermelho vivo */
-    --hl-5: #a78bfa;
+    --hl-5: #9071ffdf;
     /* Violeta */
 }
 
@@ -541,8 +541,8 @@ body::before {
 
 .card-footer {
     padding-top: 12px;
-    border-top: 1px solid var(--text-secondary);
-    mix-blend-mode: multiply;
+    border-top: 1px dotted var(--text-secondary);
+    /* mix-blend-mode: multiply; (Removido para evitar sobreposição excessiva) */
 }
 
 .meta-container {
@@ -552,7 +552,7 @@ body::before {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--text-secondary);
-    mix-blend-mode: multiply;
+    /* mix-blend-mode: multiply; (Removido para evitar sobreposição excessiva) */
 }
 
 .authors-list {
@@ -562,6 +562,8 @@ body::before {
     width: 100%;
     justify-content: flex-end;
     text-align: right;
+    mix-blend-mode: multiply;
+    /* Adicionado aqui para compensar a remoção do container */
 }
 
 .author-item {
@@ -607,6 +609,8 @@ body::before {
     font-weight: 400;
     mix-blend-mode: multiply;
     line-height: 1.15;
+    /* opacity: 0.95; */
+    /* Match com a Ementa */
 }
 
 .keyword-chip:not(:last-child)::after {
@@ -619,6 +623,8 @@ body::before {
 
 .keyword-chip [class*="hl-"] {
     padding: 0 1px;
+    color: var(--text-primary);
+    /* Força texto preto no highlight para aumentar contraste/vibrância */
 }
 
 /* =========================================
@@ -628,6 +634,7 @@ body::before {
     color: inherit;
     padding: 0 0px;
     border-radius: 0px;
+    font-weight: bold;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
 }
