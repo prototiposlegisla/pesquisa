@@ -800,22 +800,25 @@
         info.innerHTML = `
             <div class="info-section">
                 <p class="info-title">COMO ABRIR PROJETOS</p>
-                <p>Para abrir os projetos, clique nos botões no canto superior direito dos cards de resultado. São 3 repositórios:</p>
+                <p>Para abrir os projetos, clique nos botões no canto superior direito dos cartões de resultado. São 3 repositórios:</p>
                 <ul>
                     <li>SPLegis Consulta/SPLegis Intranet/Biblioteca</li>
                 </ul>
-                <p>Caso haja uma norma decorrente do projeto, também haverá botões próximos ao número da norma:</p>
+                <p>Se houver norma decorrente do projeto, também serão exibidos botões:</p>
                 <ul>
                     <li>PLP/Biblioteca/Prefeitura</li>
                 </ul>
             </div>
             <div class="info-section">
                 <p class="info-title">TRUQUES DE PESQUISA</p>
-                <p>O site permite truques que facilitam a busca por projetos ou normas diretamente pelo número:</p>
+                <p>A pesquisa pode ser feita de forma simples, mas também é possível usar os seguintes truques para uma pesquisa avançada:</p>
                 <ul>
-                    <li><strong>Busca por número do projeto:</strong> Comece com a letra <code>p</code> (minúscula ou maiúscula) seguida do número. Ex: <code>p3 educ</code> encontra projetos de número 3 que contenham "educ".</li>
-                    <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> seguido do número. Ex: <code>n18000</code>.</li>
-                    <li><strong>Para buscar apenas projetos com norma promulgada: </strong>Comece com a letra <code>n</code> (minúscula ou maiúscula) seguida de espaço. Ex: <code>n educ</code> encontra projetos que contenham "educ" e viraram norma.</li>
+                    <li><strong>Busca por número do projeto:</strong> Comece com a letra <code>p</code> (minúscula ou maiúscula) seguida do número. Ex: <code>p3 educ</code> encontra projetos de número 3 que contenham <code>educ</code>.</li>
+                    <li><strong>Busca por número da norma:</strong> Comece com a letra <code>n</code> seguida do número. Ex: <code>n18000</code>.</li>
+                    <li><strong>Para buscar apenas projetos com norma promulgada: </strong>Comece com a letra <code>n</code> (minúscula ou maiúscula) seguida de espaço. Ex: <code>n educ</code> encontra projetos que contenham <code>educ</code> e resultaram em norma.</li>
+                    <li><strong>Pesquisa com aspas combinadas com espaços: </strong> Use aspas com a palavra precedida e/ou seguida de espaço para que ela seja pesquisada exatamente como escrita. Ex: <code>" obra "</code> (espaço antes e depois da palavra, separando-a das aspas) encontra projetos que contenham <code>obra</code>, mas não encontra <code>cobrança</code>. Ex2: <code>" obra"</code> (espaço antes da palavra) encontra projetos que contenham <code>obra</code> ou <code>obras</code> mas não encontra <code>manobra</code>. Obs: a mágica funciona ainda que a palavra esteja, nos campos do resultado, precedida ou seguida de pontuação, ou esteja em início de frase etc.</li>
+                    <li><strong>Pesquisa por partido (o que inclui todos os vereadores do partido): </strong> Em geral, siglas que não aparecem em outras palavras já trazem o resultado esperado. Ex: <code>mdb</code>. Entretanto, algumas siglas dão muitos falsos positivos, por serem comuns dentro de outras palavras. Ex: <code>pl</code> e <code>pt</code>. Para esses casos, pesquise a sigla entre parênteses. Ex: <code>(pl)</code>.</li>
+                    <li><strong>Pesquisa por tipo específico de projeto: </strong> Pesquisa simples por <code>pdl</code> dá poucos falsos positivos. Para os demais tipos, use truque de aspas com espaços explicado acima. Ex: <code>" pr "</code> (espaços separando a palavra das aspas) filtrará apenas por Projetos de Resolução.</li>
                 </ul>
             </div>
             <div class="info-section">
@@ -823,7 +826,7 @@
                 <p>Os resultados são ordenados cronologicamente, considerando a data de protocolo, com os projetos mais recentes aparecendo primeiro.</p>
                 <p>A pesquisa é feita em todos os campos do projeto: tipo, número, ano, ementa, palavras-chave, proponente, partido do proponente, número da norma decorrente e ano da norma decorrente.</p>
                 <p>A pesquisa ignora acentos e maiúsculas/minúsculas. Múltiplos termos são combinados com AND (ou seja, todos devem estar presentes, ainda que em campos diferentes do projeto).</p>
-                <p>Busca exata: Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> separadas por outras palavras.</p>
+                <p>Busca exata: Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> se estiverem separadas por outras palavras.</p>
                 <p>Veja também minha ferramenta para abrir projetos e normas diretamente pelo número: <a
                         href="https://prototiposlegisla.github.io/abrir-projetos/">Link</a></p>
             </div>
