@@ -87,7 +87,7 @@
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/\.(?=\d{3})/g, '') // Remove pontos de milhar (ex: 10.000 -> 10000)
-            .trim();
+            .replace(/[^a-z0-9\s|/\-\(\)]/g, ''); // Mantém apenas caracteres permitidos (igual ao backend)
     }
 
     /**
@@ -257,32 +257,8 @@
             remaining = remaining.replace(match[0], ' ');
         }
 
-        // 2. Extrai padrões número/número (ex: 13.019/2014, 1/2025)
-        // Regex: números (com pontos opcionais) / números
-        const numSlashNumRegex = /\b(\d+(?:\.\d+)*)\s*\/\s*(\d+)\b/g;
-        while ((match = numSlashNumRegex.exec(remaining)) !== null) {
-            const fullMatch = match[0];
-            const partA = normalizeText(match[1]); // remove pontos
-            const partB = normalizeText(match[2]);
-
-            // Cria regex para busca estrita:
-            // (?:^|\D) -> Início ou não-dígito
-            // partA -> Primeiro número
-            // [\W_]* -> Separadores opcionais (espaço, pipe, slash, etc)
-            // partB -> Segundo número
-            // (?:$|\D) -> Fim ou não-dígito
-            const searchPattern = new RegExp(`(?:^|\\D)${partA}[\\W_]*${partB}(?:$|\\D)`, 'i');
-
-            normalized.push({
-                value: fullMatch, // Valor para referência
-                isRegex: true,
-                searchValue: searchPattern,
-                original: fullMatch
-            });
-            original.push(fullMatch);
-            // Substitui por espaços para não processar os números novamente
-            remaining = remaining.replace(fullMatch, ' ');
-        }
+        // 2. (REMOVIDO) A regra especial de número/número foi removida conforme solicitado.
+        // Os números serão tratados como termos normais ou frases se estiverem entre aspas.
 
         // 3. Extrai termos individuais restantes
         remaining.split(/\s+/).forEach(term => {
@@ -520,9 +496,16 @@
             'n': '[nñ]'
         };
 
+        // Regex para "Não Letra/Número" (exclui acentos também)
+        // Isso serve para simular \b, mas permitindo que " " na query case com qualquer separador
+        const NON_WORD_CHAR = '[^a-zA-Z0-9áàâãäéèêëiíìîïoóòôõöuúùûücçñ]';
+
         let pattern = '';
         for (const char of normalizedTerm) {
-            if (accentMap[char]) {
+            if (char === ' ') {
+                // Espaço na query significa "início/fim de linha ou caractere não-alfanumérico"
+                pattern += `(?:^|$|${NON_WORD_CHAR})`;
+            } else if (accentMap[char]) {
                 pattern += accentMap[char];
             } else if (/\d/.test(char)) {
                 // Se for dígito, aceita opcionalmente um ponto depois

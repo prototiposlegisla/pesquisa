@@ -65,8 +65,8 @@ def normalize_string(text: str) -> str:
     # 4. Substituir underscore por espaço
     text = text.replace('_', ' ')
     
-    # 5. Remover pontuação restante (mantendo pipe para estrutura)
-    text = re.sub(r'[^a-z0-9\s|]', '', text)
+    # 5. Remover pontuação restante (mantendo pipe, barra, hífen e parênteses)
+    text = re.sub(r'[^a-z0-9\s|/\-\(\)]', '', text)
     
     # 6. Normalizar espaços
     text = re.sub(r'\s+', ' ', text).strip()
@@ -87,9 +87,13 @@ def normalize_searchable(components: List[str]) -> str:
     # 2. Normaliza
     normalized = normalize_string(raw_text)
     
-    # 3. Remover espaços ao redor de pipes explicitamente (Barreira Física)
-    # Ex: "pl | projeto" -> "pl|projeto"
-    final_text = re.sub(r'\s*\|\s*', '|', normalized)
+    # 3. Garantir espaços ao redor de pipes
+    # Ex: "pl | projeto" -> " pl | projeto | "
+    # Primeiro substitui pipes por " | "
+    final_text = re.sub(r'\s*\|\s*', ' | ', normalized)
+    
+    # 4. Adicionar espaços no início e fim
+    final_text = f" {final_text} "
     
     return final_text
 
@@ -218,7 +222,8 @@ def transform_project(proj: Dict) -> List[str]:
             norma, # ADDED
             ementa,
             keywords,
-            promoventes
+            promoventes,
+            f"{numero}/{ano}" # ADDED: Identificador número/ano
         ]
         searchable = normalize_searchable(search_components)
         
