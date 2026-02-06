@@ -354,7 +354,14 @@ def main():
         "all": [layer_atual, layer_recente, layer_medio, layer_hist_a, layer_hist_b]
     }
     
-    selected_layers = layers_map.get(args.layer, [])
+    selected_layers = []
+    if args.layer == 'all':
+        selected_layers = layers_map['all']
+    else:
+        requested = [l.strip() for l in args.layer.split(',')]
+        for req in requested:
+            if req in layers_map:
+                selected_layers.extend(layers_map[req])
     
     version_info = {
         "lastUpdate": datetime.now(SP_TZ).isoformat(),
