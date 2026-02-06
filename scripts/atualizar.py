@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 import time
 import requests
 import unicodedata
@@ -382,54 +381,6 @@ def main():
     
     save_json("version.json", version_info)
     print("\n🏁 Processamento concluído.")
-    
-    # Auto-commit logic
-    auto_git_commit()
-
-GIT_COMMIT_MSG = "Atualização automática de dados"
-
-def run_git_cmd(args):
-    """Executa comando git e retorna (success, stdout)."""
-    try:
-        result = subprocess.run(
-            ["git"] + args, 
-            capture_output=True, 
-            text=True, 
-            encoding='utf-8',
-            check=False
-        )
-        return result.returncode == 0, result.stdout.strip()
-    except FileNotFoundError:
-        return False, "Git not found"
-
-def auto_git_commit():
-    """Realiza commit ou amend se o último commit for de atualização."""
-    print("\n📦 Verificando Git...")
-    
-    # 1. Check status
-    changed, _ = run_git_cmd(["status", "--porcelain"])
-    if not changed:
-        print("   Nada para commitar.")
-        return
-
-    # 2. Add files
-    print("   Adicionando arquivos...")
-    run_git_cmd(["add", "dados/*.json", "version.json"])
-    
-    # 3. Check last commit message
-    success, last_msg = run_git_cmd(["log", "-1", "--pretty=%B"])
-    
-    if success and last_msg.startswith(GIT_COMMIT_MSG):
-        print("   🔄 Último commit é atualização automática. Fazendo AMEND...")
-        success, out = run_git_cmd(["commit", "--amend", "--no-edit"])
-    else:
-        print("   🆕 Criando NOVO commit de atualização...")
-        success, out = run_git_cmd(["commit", "-m", GIT_COMMIT_MSG])
-        
-    if success:
-        print("   ✅ Commit realizado com sucesso.")
-    else:
-        print(f"   ❌ Falha no commit: {out}")
 
 if __name__ == "__main__":
     main()
