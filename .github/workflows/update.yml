@@ -30,6 +30,13 @@ jobs:
         run: |
           pip install requests
 
+      - name: Restore existing data from gh-pages
+        continue-on-error: true
+        run: |
+          git fetch origin gh-pages --depth=1 || echo "No gh-pages branch found"
+          git checkout origin/gh-pages -- dados/ version.json || echo "No existing data found"
+
+
       - name: Determine layers to update
         id: layers
         run: |
