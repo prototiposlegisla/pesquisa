@@ -2,7 +2,10 @@ name: Update Database
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Daily at 06:00 UTC
+    - cron: '0 5 * * *'  # Daily at 05:00 UTC
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       layers:
@@ -26,42 +29,50 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          pip install requests
-
       - name: Restore existing data from gh-pages
         continue-on-error: true
         run: |
           git fetch origin gh-pages --depth=1 || echo "No gh-pages branch found"
           git checkout origin/gh-pages -- dados/ version.json || echo "No existing data found"
 
-
       - name: Determine layers to update
         id: layers
         run: |
           DATE_MD=$(date +%m-%d)
-          WEEKDAY=$(date +%u) # 1-7, 7 is Sunday
+          DATE_D=$(date +%d)
+          WEEKDAY=$(date +%u) # 1-7 (Mon-Sun)
           INPUT_LAYERS="${{ github.event.inputs.layers }}"
 
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "$INPUT_LAYERS" != "auto" ] && [ -n "$INPUT_LAYERS" ]; then
             echo "layers=$INPUT_LAYERS" >> $GITHUB_OUTPUT
             echo "Running MANUAL update ($INPUT_LAYERS)"
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            echo "layers=none" >> $GITHUB_OUTPUT
+            echo "Running CODE-ONLY update (none)"
           elif [ "$DATE_MD" == "01-01" ]; then
             echo "layers=all" >> $GITHUB_OUTPUT
             echo "Running YEARLY update (all)"
           elif [ "$DATE_MD" == "07-01" ]; then
-            echo "layers=medio,atual" >> $GITHUB_OUTPUT
-            echo "Running SEMESTRAL update (medio, atual)"
-          elif [ "$WEEKDAY" == "7" ]; then
-            echo "layers=recente,atual" >> $GITHUB_OUTPUT
-            echo "Running WEEKLY update (recente, atual)"
+            echo "layers=all" >> $GITHUB_OUTPUT
+            echo "Running SEMESTRAL update (all)"
+          elif [ "$DATE_D" == "01" ]; then
+            echo "layers=medio" >> $GITHUB_OUTPUT
+            echo "Running MONTHLY update (medio)"
+          elif [[ "$WEEKDAY" =~ ^[2-5]$ ]]; then
+            echo "layers=atual,recente" >> $GITHUB_OUTPUT
+            echo "Running WEEKDAY update (atual, recente)"
           else
             echo "layers=atual" >> $GITHUB_OUTPUT
-            echo "Running DAILY update (atual)"
+            echo "Running STANDARD update (atual)"
           fi
 
+      - name: Install dependencies
+        if: steps.layers.outputs.layers != 'none'
+        run: |
+          pip install requests
+
       - name: Run update script
+        if: steps.layers.outputs.layers != 'none'
         run: python scripts/atualizar.py --layer ${{ steps.layers.outputs.layers }}
 
       - name: Prepare deployment

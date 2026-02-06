@@ -373,6 +373,9 @@ def main():
     if existing_version:
         version_info["camadas"] = existing_version.get("camadas", {})
         
+    import sys
+
+    has_error = False
     for layer in selected_layers:
         success, count = process_layer(layer["start"], layer["end"], layer["name"])
         if success:
@@ -383,11 +386,19 @@ def main():
                 "projetos": count,
                 "descricao": f"Camada {key} ({layer['start']} a {layer['end']})"
             }
-            if layer != selected_layers[-1]:
-                time.sleep(15)
+        else:
+            has_error = True
+            print(f"⚠️ Erro ao processar camada: {layer['name']}")
+
+        if layer != selected_layers[-1]:
+            time.sleep(15)
     
     save_json("version.json", version_info)
     print("\n🏁 Processamento concluído.")
+    
+    if has_error:
+        print("❌ Finalizando com erros.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
