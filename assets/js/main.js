@@ -905,7 +905,6 @@
         normaId.innerHTML = `
             <span class="id-type">${highlightText(tipo, highlightTerms)}</span>
             <span class="id-number" style="transform: rotate(${idRotation}deg);">${highlightText(numero, highlightTerms)}</span>
-            <span class="id-slash">/</span>
             <span class="id-year">${highlightText(data, highlightTerms)}</span>
         `;
 
