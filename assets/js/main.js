@@ -134,6 +134,19 @@
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    /**
+     * Escapa caracteres HTML para prevenir XSS
+     */
+    function escapeHtml(text) {
+        if (!text) return text;
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // =========================================
     // MÓDULO: CARREGAMENTO DE DADOS
     // =========================================
@@ -646,9 +659,9 @@
      * Aplica highlight nos termos encontrados no texto
      */
     function highlightText(text, terms) {
-        if (!text || !terms || terms.length === 0) return text;
+        if (!text || !terms || terms.length === 0) return escapeHtml(text);
 
-        let result = text;
+        let result = escapeHtml(text);
 
         // Create a single regex with capturing groups for each term: (term1)|(term2)|...
         const patterns = terms.map(term => `(${createFlexiblePattern(term.value)})`);
@@ -727,7 +740,7 @@
                 ? HIGHLIGHT_COLORS[index]
                 : 'hl-gray';
             const displayTerm = term.original || term.value || term;
-            return `<span class="${colorClass}-full">${displayTerm.toUpperCase()}</span>`;
+            return `<span class="${colorClass}-full">${escapeHtml(displayTerm.toUpperCase())}</span>`;
         }).join(' + ');
     }
 
