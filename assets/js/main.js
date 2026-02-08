@@ -1214,7 +1214,7 @@
             <div class="info-section">
                 <p class="info-title">INFORMAÇÕES GERAIS</p>
                 <p>Os resultados são ordenados cronologicamente, com os mais recentes aparecendo primeiro. Para projetos, é considerada a data de protocolo. Para normas, é considerada a data de promulgação.</p>
-                <p>A base de dados dos projetos é baseada nos dados do SPLegis. A base de dados das normas é baseada nos dados da Biblioteca da CMSP.</p>
+                <p>A base de dados dos projetos é baseada nos dados do SPLegis. Já a base de dados das normas é baseada nos dados da Biblioteca da CMSP.</p>
                 <p>A pesquisa é feita em todos os campos do projeto: tipo, número, ano, ementa, palavras-chave, proponente, partido do proponente, número da norma decorrente e ano da norma decorrente. Para normas, também há os campos de "observações" e "revogações".</p>
                 <p>A pesquisa ignora acentos e maiúsculas/minúsculas. Múltiplos termos são combinados com AND (ou seja, todos devem estar presentes, ainda que em campos diferentes do projeto ou norma).</p>
                 <p>Busca exata: Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> se estiverem separadas por outras palavras.</p>
