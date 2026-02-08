@@ -117,10 +117,10 @@ body::before {
     margin-bottom: -10px;
 }
 
-/* Linha superior: toggle à esquerda, autor à direita */
+/* Linha superior: autor */
 .header-top-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 12px;
 }
@@ -133,62 +133,48 @@ body::before {
 }
 
 /* =========================================
-   TOGGLE PROJETOS / NORMAS - LED RETRÔ
+   TOGGLE PROJETOS / NORMAS - OPPOSING OPTIONS
    ========================================= */
 .search-toggle {
     display: flex;
     align-items: center;
-    gap: 4px;
+    margin-top: 14px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 2px;
+    padding: 2px;
+    position: relative;
+    z-index: 1;
 }
 
 .toggle-btn {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     letter-spacing: 0.12em;
-    padding: 4px 10px 4px 22px;
+    padding: 6px 0;
     border: none;
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: all 0.25s ease;
     text-transform: uppercase;
     position: relative;
+    flex: 1;
+    text-align: center;
+    border-radius: 1px;
 }
 
-/* LED indicator (bolinha) */
-.toggle-btn::before {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #57534e33;
-    transition: all 0.3s ease;
-}
-
-/* LED aceso - amarelo retrô com glow */
 .toggle-btn.active {
     color: var(--text-primary);
     font-weight: 600;
-}
-
-.toggle-btn.active::before {
-    background: #e6a817;
+    background: rgba(255, 255, 255, 0.65);
     box-shadow:
-        0 0 4px 1px rgba(230, 168, 23, 0.6),
-        0 0 10px 3px rgba(230, 168, 23, 0.3),
-        0 0 18px 5px rgba(230, 168, 23, 0.1);
+        0 1px 3px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 .toggle-btn:hover:not(.active) {
     color: var(--text-primary);
-}
-
-.toggle-btn:hover:not(.active)::before {
-    background: #57534e66;
+    background: rgba(255, 255, 255, 0.25);
 }
 
 /* SEARCH-BOX: Vinculada ao estilo do card PL */
@@ -802,13 +788,7 @@ body::before {
 
     .toggle-btn {
         font-size: 0.65rem;
-        padding: 3px 8px 3px 18px;
-    }
-
-    .toggle-btn::before {
-        width: 6px;
-        height: 6px;
-        left: 5px;
+        padding: 5px 0;
     }
 
     /* Ajustes Mobile para Norma e Carimbo */

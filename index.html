@@ -60,12 +60,8 @@
              CABEÇALHO DE BUSCA
              ========================================= -->
         <div class="search-header">
-            <!-- Toggle + Mensagem do autor (mesma linha) -->
+            <!-- Mensagem do autor -->
             <div class="header-top-row">
-                <div class="search-toggle">
-                    <button class="toggle-btn active" data-mode="projetos">PROJETOS</button>
-                    <button class="toggle-btn" data-mode="normas">NORMAS</button>
-                </div>
                 <div class="author-message">
                     Aceito sugestões! Kauê Negrão
                 </div>
@@ -92,6 +88,12 @@
                         <button class="clear-btn"
                             onclick="document.querySelector('.search-input').value = ''; document.querySelector('.search-input').dispatchEvent(new Event('input'));">[limpar]</button>
                     </div>
+                </div>
+
+                <!-- Toggle Projetos/Normas -->
+                <div class="search-toggle">
+                    <button class="toggle-btn active" data-mode="projetos">PROJETOS</button>
+                    <button class="toggle-btn" data-mode="normas">NORMAS</button>
                 </div>
             </div>
 
