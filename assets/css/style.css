@@ -117,12 +117,78 @@ body::before {
     margin-bottom: -10px;
 }
 
+/* Linha superior: toggle à esquerda, autor à direita */
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
 .author-message {
     font-family: var(--font-ui-serif);
     font-size: 0.9rem;
     color: var(--text-secondary);
     text-align: right;
-    margin-bottom: 12px;
+}
+
+/* =========================================
+   TOGGLE PROJETOS / NORMAS - LED RETRÔ
+   ========================================= */
+.search-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.toggle-btn {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    padding: 4px 10px 4px 22px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-transform: uppercase;
+    position: relative;
+}
+
+/* LED indicator (bolinha) */
+.toggle-btn::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #57534e33;
+    transition: all 0.3s ease;
+}
+
+/* LED aceso - amarelo retrô com glow */
+.toggle-btn.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.toggle-btn.active::before {
+    background: #e6a817;
+    box-shadow:
+        0 0 4px 1px rgba(230, 168, 23, 0.6),
+        0 0 10px 3px rgba(230, 168, 23, 0.3),
+        0 0 18px 5px rgba(230, 168, 23, 0.1);
+}
+
+.toggle-btn:hover:not(.active) {
+    color: var(--text-primary);
+}
+
+.toggle-btn:hover:not(.active)::before {
+    background: #57534e66;
 }
 
 /* SEARCH-BOX: Vinculada ao estilo do card PL */
@@ -729,6 +795,22 @@ body::before {
         font-size: 11px;
     }
 
+    .header-top-row {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .toggle-btn {
+        font-size: 0.65rem;
+        padding: 3px 8px 3px 18px;
+    }
+
+    .toggle-btn::before {
+        width: 6px;
+        height: 6px;
+        left: 5px;
+    }
+
     /* Ajustes Mobile para Norma e Carimbo */
     .norma-wrapper {
         padding-left: 0;
@@ -855,6 +937,35 @@ body::before {
 /* Ajuste de espaçamento do card quando tem norma */
 .card:has(.norma-wrapper) .card-header {
     margin-bottom: 24px;
+}
+
+/* =========================================
+   NORMA CARD: REFERÊNCIA AO PROJETO
+   ========================================= */
+.norma-project-ref {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 6px 0;
+    border-top: 1px dotted var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.norma-project-ref .ref-label {
+    font-family: var(--font-ui-serif);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    opacity: 0.8;
+}
+
+.norma-project-ref .ref-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* =========================================
