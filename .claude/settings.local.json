@@ -14,15 +14,7 @@
       "Bash(python:*)",
       "Bash(where:*)",
       "Bash(py -3:*)",
-      "Bash(dir:*)",
-      "Bash(python3:*)",
-      "Bash(done)",
-      "Bash(for file in \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-atual.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-2020.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-2000.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-1990.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-1950.json\")",
-      "Bash(do grep -o '\\\\[\"\"[^\"\"]*\"\",' \"$file\")",
-      "Bash(for tipo in \"ATO\" \"DL\" \"ELO\" \"LEI\" \"RES\")",
-      "Bash(do)",
-      "Bash(echo:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(dir:*)"
     ]
   }
 }
