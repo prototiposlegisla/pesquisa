@@ -35,18 +35,14 @@ jobs:
       - name: Determine layers to update
         id: layers
         run: |
-          DATE_D=$(date +%d)
           INPUT_LAYERS="${{ github.event.inputs.layers }}"
 
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "$INPUT_LAYERS" != "auto" ] && [ -n "$INPUT_LAYERS" ]; then
             echo "layers=$INPUT_LAYERS" >> $GITHUB_OUTPUT
             echo "Running MANUAL update ($INPUT_LAYERS)"
-          elif [ "$DATE_D" == "01" ]; then
-            echo "layers=all" >> $GITHUB_OUTPUT
-            echo "Running MONTHLY update (all — includes pre-1990 decades)"
           else
-            echo "layers=atual,2020,2010,2000,1990" >> $GITHUB_OUTPUT
-            echo "Running DAILY update (1990+)"
+            echo "layers=all" >> $GITHUB_OUTPUT
+            echo "Running DAILY update (all — hash check skips unchanged layers)"
           fi
 
       - name: Install dependencies
