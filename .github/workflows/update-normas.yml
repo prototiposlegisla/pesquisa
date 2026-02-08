@@ -1,0 +1,85 @@
+name: Update Normas
+
+on:
+  schedule:
+    - cron: '30 5 * * *'  # Daily at 05:30 UTC (after projects update)
+  workflow_dispatch:
+    inputs:
+      layers:
+        description: 'Layers to update (comma-separated, e.g. "atual,2020" or "all")'
+        required: true
+        default: 'auto'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Restore existing data from gh-pages
+        continue-on-error: true
+        run: |
+          git fetch origin gh-pages --depth=1 || echo "No gh-pages branch found"
+          git checkout origin/gh-pages -- dados/ version.json || echo "No existing data found"
+
+      - name: Determine layers to update
+        id: layers
+        run: |
+          DATE_D=$(date +%d)
+          INPUT_LAYERS="${{ github.event.inputs.layers }}"
+
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "$INPUT_LAYERS" != "auto" ] && [ -n "$INPUT_LAYERS" ]; then
+            echo "layers=$INPUT_LAYERS" >> $GITHUB_OUTPUT
+            echo "Running MANUAL update ($INPUT_LAYERS)"
+          elif [ "$DATE_D" == "01" ]; then
+            echo "layers=all" >> $GITHUB_OUTPUT
+            echo "Running MONTHLY update (all — includes pre-1990 decades)"
+          else
+            echo "layers=atual,2020,2010,2000,1990" >> $GITHUB_OUTPUT
+            echo "Running DAILY update (1990+)"
+          fi
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run normas update script
+        run: python scripts/atualizar_normas.py --layer ${{ steps.layers.outputs.layers }}
+
+      - name: Prepare deployment
+        run: |
+          mkdir public
+
+          # Copy generated data (includes dados/version.json)
+          if [ -d "dados" ]; then
+            cp -r dados public/
+          else
+            echo "No dados directory found"
+          fi
+
+          # Copy version.json to root of public
+          if [ -f "dados/version.json" ]; then cp dados/version.json public/; fi
+
+          # Copy frontend assets matching root structure
+          cp index.html public/
+          if [ -d "assets" ]; then cp -r assets public/; fi
+          if [ -f "CNAME" ]; then cp CNAME public/; fi
+          if [ -f "LICENSE" ]; then cp LICENSE public/; fi
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          force_orphan: true
