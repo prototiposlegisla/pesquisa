@@ -21,7 +21,24 @@
             './dados/historico-a.json',
             './dados/historico-b.json'
         ],
-        CARD_ROTATIONS: [-0.4, 0.3, -0.2, 0.5, -0.3, 0.2, -0.5, 0.4]
+        CARD_ROTATIONS: [-0.4, 0.3, -0.2, 0.5, -0.3, 0.2, -0.5, 0.4],
+        NORMAS_FILES: [
+            './dados/normas/normas-atual.json',
+            './dados/normas/normas-2020.json',
+            './dados/normas/normas-2010.json',
+            './dados/normas/normas-2000.json',
+            './dados/normas/normas-1990.json',
+            './dados/normas/normas-1980.json',
+            './dados/normas/normas-1970.json',
+            './dados/normas/normas-1960.json',
+            './dados/normas/normas-1950.json',
+            './dados/normas/normas-1940.json',
+            './dados/normas/normas-1930.json',
+            './dados/normas/normas-1920.json',
+            './dados/normas/normas-1910.json',
+            './dados/normas/normas-1900.json',
+            './dados/normas/normas-antigo.json'
+        ]
     };
 
     // Mapeamento de tipos de projeto para códigos da URL
@@ -31,14 +48,33 @@
     const NORMA_TIPOS_PLP = {
         'Lei': 'Lei',
         'Decreto-Legislativo': 'DECLEG',
-        'Resolução': 'RESCMSP'
+        'Resolução': 'RESCMSP',
+        'Ato': 'Ato'
     };
 
     // Mapeamento de tipos de norma para Biblioteca
     const NORMA_TIPOS_BIB = {
         'Lei': 'LEI',
         'Decreto-Legislativo': 'DLE',
-        'Resolução': 'RESOLUCAO*DA*CMSP*'
+        'Resolução': 'RESOLUCAO*DA*CMSP*',
+        'Ato': 'ATO*DA*CMSP*'
+    };
+
+    // Mapeamento de tipo de norma para data-type do card (reutiliza cores dos projetos)
+    const NORMA_CARD_TYPE_MAP = {
+        'LEI': 'PL',
+        'RES': 'PR',
+        'ELO': 'PLO',
+        'ATO': 'PLO',
+        'DL': 'PDL'
+    };
+
+    // Mapeamento de texto do campo "projeto" para tipo de projeto
+    const PROJETO_TEXT_MAP = {
+        'Projeto de Emenda à Lei Orgânica': 'PLO',
+        'Projeto de Decreto Legislativo': 'PDL',
+        'Projeto de Resolução': 'PR',
+        'Projeto de Lei': 'PL'
     };
 
     // Sequência de cores para highlight (classes CSS)
@@ -66,12 +102,19 @@
     let currentSearchTerms = [];
     let debounceTimer = null;
 
+    // Estado de normas
+    let allNormasData = [];
+    let isNormasLoaded = false;
+    let normasLoadError = false;
+    let isNormasLoading = false;
+    let activeMode = 'projetos'; // 'projetos' | 'normas'
+
     // =========================================
     // ELEMENTOS DOM
     // =========================================
 
     let searchInput, clearBtn, resultsLog, resultsCount, resultsTerms, mainContainer;
-    let loadMoreBtn, infoField;
+    let loadMoreBtn, infoField, toggleContainer;
 
     // =========================================
     // MÓDULO: NORMALIZAÇÃO DE TEXTO
@@ -133,6 +176,9 @@
                 performSearch();
             }
 
+            // Após carregar projetos, inicia carregamento de normas em background
+            loadAllNormasData();
+
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
             loadError = true;
@@ -149,6 +195,52 @@
             <span style="color: #951D36;">Erro ao carregar dados. Verifique sua conexão.</span>
             <button class="reload-btn" onclick="location.reload()">[Recarregar]</button>
         `;
+    }
+
+    /**
+     * Carrega todos os arquivos JSON de normas
+     * Chamado automaticamente após o carregamento dos projetos
+     */
+    async function loadAllNormasData() {
+        if (isNormasLoaded || isNormasLoading) return;
+
+        isNormasLoading = true;
+
+        try {
+            const responses = await Promise.all(
+                CONFIG.NORMAS_FILES.map(file => fetch(file))
+            );
+
+            for (const res of responses) {
+                if (!res.ok) {
+                    throw new Error(`Erro HTTP ${res.status} ao carregar normas`);
+                }
+            }
+
+            const jsons = await Promise.all(
+                responses.map(res => res.json())
+            );
+
+            allNormasData = jsons.flatMap(json => json.data || []);
+            isNormasLoaded = true;
+            normasLoadError = false;
+
+            console.log(`Normas carregadas: ${allNormasData.length} normas`);
+
+            // Se o usuário está no modo normas e tinha busca pendente, executa
+            if (activeMode === 'normas' && searchInput && searchInput.value.trim()) {
+                performSearch();
+            }
+
+        } catch (error) {
+            console.error('Erro ao carregar normas:', error);
+            normasLoadError = true;
+            if (activeMode === 'normas') {
+                showLoadError();
+            }
+        } finally {
+            isNormasLoading = false;
+        }
     }
 
     // =========================================
@@ -284,6 +376,10 @@
      * Executa a busca com base na query parseada
      */
     function executeSearch(query) {
+        if (activeMode === 'normas') {
+            return executeNormasSearch(query);
+        }
+
         if (!isDataLoaded) {
             return [];
         }
@@ -355,6 +451,63 @@
                 return term.searchValue.test(searchable);
             }
             return searchable.includes(term.value);
+        });
+    }
+
+    /**
+     * Executa busca no dataset de normas
+     */
+    function executeNormasSearch(query) {
+        if (!isNormasLoaded) {
+            return [];
+        }
+
+        // Busca por número de norma: n123
+        if (query.type === 'norma') {
+            let results = allNormasData.filter(row => {
+                return row[1] === query.normaNumber;
+            });
+
+            if (query.terms && query.terms.length > 0) {
+                results = results.filter(row => {
+                    const searchable = row[10];
+                    return checkTermsMatch(searchable, query.terms);
+                });
+            }
+            return results;
+        }
+
+        // Busca por número de projeto de origem: p123
+        if (query.type === 'project_number') {
+            let results = allNormasData.filter(row => {
+                const projeto = row[6];
+                if (!projeto) return false;
+                const match = projeto.match(/(\d+)\//);
+                return match && match[1] === query.projectNumber;
+            });
+
+            if (query.terms.length > 0) {
+                results = results.filter(row => {
+                    const searchable = row[10];
+                    return checkTermsMatch(searchable, query.terms);
+                });
+            }
+            return results;
+        }
+
+        // Busca normal
+        let initialData = allNormasData;
+
+        if (query.terms.length === 0) {
+            if (query.requireNorma) {
+                return initialData; // No modo normas, tudo é norma
+            }
+            return [];
+        }
+
+        return initialData.filter(row => {
+            const searchable = row[10];
+            return checkTermsMatch(searchable, query.terms);
         });
     }
 
@@ -436,6 +589,49 @@
     function buildPrefeituraURL(normaNum) {
         const formattedNum = formatWithDots(normaNum);
         return `https://legislacao.prefeitura.sp.gov.br/busca?nr_lei=${formattedNum}`;
+    }
+
+    // =========================================
+    // MÓDULO: PARSE DE REFERÊNCIA DE PROJETO (NORMAS)
+    // =========================================
+
+    /**
+     * Extrai tipo, numero e ano de texto como "Projeto de Lei 396/2021"
+     */
+    function parseProjetoReference(projetoText) {
+        if (!projetoText) return null;
+
+        // Tenta cada prefixo conhecido (do mais longo para o mais curto)
+        for (const [prefix, tipo] of Object.entries(PROJETO_TEXT_MAP)) {
+            if (projetoText.startsWith(prefix)) {
+                const remainder = projetoText.substring(prefix.length).trim();
+                const match = remainder.match(/^(\d+)\/(\d+)/);
+                if (match) {
+                    return { tipo, numero: match[1], ano: match[2] };
+                }
+            }
+        }
+
+        // Fallback: padrão genérico número/ano
+        const genericMatch = projetoText.match(/(\d+)\/(\d{4})/);
+        if (genericMatch) {
+            return { tipo: 'PL', numero: genericMatch[1], ano: genericMatch[2] };
+        }
+
+        return null;
+    }
+
+    /**
+     * Limpa campo de revogação: remove ^t... e usa só primeira metade antes do |
+     */
+    function cleanRevogacao(revogacao) {
+        if (!revogacao) return '';
+        // Pega só a primeira parte antes do pipe
+        const parts = revogacao.split(' | ');
+        let text = parts[0].trim();
+        // Remove sufixo ^t... (ex: ^tL14485)
+        text = text.replace(/\^t\S*/gi, '').trim();
+        return text;
     }
 
     // =========================================
@@ -675,6 +871,189 @@
     }
 
     /**
+     * Cria elemento de card para uma norma
+     */
+    function createNormaCard(row, highlightTerms, index) {
+        const tipo = row[0];          // LEI, ATO, ELO, DL, RES
+        const numero = row[1];
+        const data = row[2];          // DD/MM/YYYY
+        const ementa = row[3];
+        const autores = row[4];
+        const publicacao = row[5];
+        const projeto = row[6];
+        const palavrasChave = row[7];
+        const notas = row[8];
+        const revogacao = row[9];
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.type = NORMA_CARD_TYPE_MAP[tipo] || 'PL';
+
+        // Rotação fixa baseada no índice
+        const rotation = CONFIG.CARD_ROTATIONS[index % CONFIG.CARD_ROTATIONS.length];
+        card.style.setProperty('--card-rotation', `${rotation}deg`);
+        card.style.transform = `rotate(var(--card-rotation))`;
+
+        // ===== HEADER =====
+        const header = document.createElement('div');
+        header.className = 'card-header';
+
+        const normaId = document.createElement('div');
+        normaId.className = 'project-id';
+
+        const idRotation = (Math.random() * 8 - 4).toFixed(0);
+        normaId.innerHTML = `
+            <span class="id-type">${highlightText(tipo, highlightTerms)}</span>
+            <span class="id-number" style="transform: rotate(${idRotation}deg);">${highlightText(numero, highlightTerms)}</span>
+            <span class="id-slash">/</span>
+            <span class="id-year">${highlightText(data, highlightTerms)}</span>
+        `;
+
+        // Botões de ação da norma (PLP, BIB, PREF)
+        const actions = document.createElement('div');
+        actions.className = 'card-actions';
+
+        // Extrair ano da data (DD/MM/YYYY)
+        const dataMatch = data.match(/(\d{4})$/);
+        const normaAno = dataMatch ? dataMatch[1] : '';
+        const normaNumClean = numero.replace(/\./g, '');
+
+        // Determinar tipo de norma para URLs
+        let normaTipoForURL;
+        if (tipo === 'LEI' || tipo === 'ELO') normaTipoForURL = 'Lei';
+        else if (tipo === 'DL') normaTipoForURL = 'Decreto-Legislativo';
+        else if (tipo === 'RES') normaTipoForURL = 'Resolução';
+        else if (tipo === 'ATO') normaTipoForURL = 'Ato';
+        else normaTipoForURL = null;
+
+        if (normaTipoForURL) {
+            const tipoPLP = NORMA_TIPOS_PLP[normaTipoForURL] || 'Lei';
+            const plpURL = `https://app-plpconsulta-prd.azurewebsites.net/Forms/MostrarArquivo?TIPO=${tipoPLP}&NUMERO=${normaNumClean}&ANO=${normaAno}&DOCUMENTO=Ficha`;
+
+            const tipoBib = NORMA_TIPOS_BIB[normaTipoForURL];
+            const formattedNum = formatWithDots(numero);
+            let bibURL;
+            if (normaTipoForURL === 'Resolução' || normaTipoForURL === 'Ato') {
+                // Resolução e Ato usam formato com (6)*ano
+                bibURL = `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/(6)*${normaAno}`;
+            } else {
+                bibURL = `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/${normaAno}`;
+            }
+
+            // Apenas Lei e ELO têm link para Prefeitura
+            const isLei = (tipo === 'LEI' || tipo === 'ELO');
+
+            actions.innerHTML = `
+                <a href="${plpURL}" class="action-btn" title="Portal de Legislação Paulista">PLP</a>
+                <span class="separator-pipe">/</span>
+                <a href="${bibURL}" class="action-btn" title="Biblioteca">BIB</a>
+                ${isLei ? `
+                    <span class="separator-pipe">/</span>
+                    <a href="${buildPrefeituraURL(numero)}" class="action-btn" title="Prefeitura">PREF</a>
+                ` : ''}
+            `;
+        }
+
+        header.appendChild(normaId);
+        header.appendChild(actions);
+        card.appendChild(header);
+
+        // ===== BODY (Ementa + Notas + Revogação) =====
+        const body = document.createElement('div');
+        body.className = 'card-body';
+
+        let ementaHtml = highlightText(ementa, highlightTerms);
+
+        if (notas) {
+            ementaHtml += `<br><br><em>${highlightText(notas, highlightTerms)}</em>`;
+        }
+
+        const revogacaoClean = cleanRevogacao(revogacao);
+        if (revogacaoClean) {
+            ementaHtml += `<br><br><strong style="color: var(--color-plo);">${highlightText(revogacaoClean, highlightTerms)}</strong>`;
+        }
+
+        body.innerHTML = `<p class="ementa">${ementaHtml}</p>`;
+        card.appendChild(body);
+
+        // ===== REFERÊNCIA AO PROJETO (se preenchido e ano >= 1991) =====
+        if (projeto) {
+            const parsed = parseProjetoReference(projeto);
+            if (parsed && parseInt(parsed.ano) >= 1991) {
+                const projRef = document.createElement('div');
+                projRef.className = 'norma-project-ref';
+                projRef.innerHTML = `
+                    <span class="ref-label">${highlightText(projeto, highlightTerms)}</span>
+                    <div class="ref-actions">
+                        <a href="${buildSPLegisURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="SPLegis Consulta">SPL</a>
+                        <span class="separator-pipe">/</span>
+                        <a href="${buildIntranetURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="SPLegis Intranet">INT</a>
+                        <span class="separator-pipe">/</span>
+                        <a href="${buildBibliotecaProjetoURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="Biblioteca">BIB</a>
+                    </div>
+                `;
+                card.appendChild(projRef);
+            }
+        }
+
+        // ===== FOOTER =====
+        const footer = document.createElement('div');
+        footer.className = 'card-footer';
+
+        const metaContainer = document.createElement('div');
+        metaContainer.className = 'meta-container';
+
+        // Autores
+        const authorsList = document.createElement('div');
+        authorsList.className = 'authors-list';
+
+        if (autores) {
+            const autoresArr = autores.split(' | ');
+            autoresArr.forEach(autor => {
+                const authorItem = document.createElement('div');
+                authorItem.className = 'author-item';
+                const match = autor.match(/^(.+?)\s*\((.+?)\)$/);
+                if (match) {
+                    authorItem.innerHTML = `
+                        <span class="author-name">${highlightText(match[1].trim(), highlightTerms)}</span>
+                        <span class="author-party">${highlightText(match[2].trim(), highlightTerms)}</span>
+                    `;
+                } else {
+                    authorItem.innerHTML = `
+                        <span class="author-name">${highlightText(autor.trim(), highlightTerms)}</span>
+                    `;
+                }
+                authorsList.appendChild(authorItem);
+            });
+        }
+
+        metaContainer.appendChild(authorsList);
+
+        // Palavras-chave
+        if (palavrasChave && palavrasChave !== 'SEM_PALAVRAS') {
+            const keywords = document.createElement('div');
+            keywords.className = 'keywords';
+
+            const palavras = palavrasChave.split(' | ');
+            palavras.forEach(palavra => {
+                const chip = document.createElement('span');
+                chip.className = 'keyword-chip';
+                const chipRotation = (Math.random() * 1 - 0.5).toFixed(1);
+                chip.style.transform = `rotate(${chipRotation}deg)`;
+                chip.innerHTML = highlightText(palavra.trim(), highlightTerms);
+                keywords.appendChild(chip);
+            });
+
+            metaContainer.appendChild(keywords);
+        }
+
+        footer.appendChild(metaContainer);
+        card.appendChild(footer);
+
+        return card;
+    }
+
+    /**
      * Renderiza os resultados na página
      */
     function renderResults(append = false) {
@@ -699,7 +1078,9 @@
         const fragment = document.createDocumentFragment();
 
         slice.forEach((row, index) => {
-            const card = createCard(row, currentSearchTerms, displayedCount + index);
+            const card = activeMode === 'normas'
+                ? createNormaCard(row, currentSearchTerms, displayedCount + index)
+                : createCard(row, currentSearchTerms, displayedCount + index);
             fragment.appendChild(card);
         });
 
@@ -734,15 +1115,20 @@
      * Atualiza o log de resultados
      */
     function updateResultsLog(query) {
-        // Caso de carregando
-        if (!isDataLoaded && !loadError) {
+        // Caso de carregando (só mostra se o usuário já digitou algo)
+        if (!isDataLoaded && !loadError && activeMode === 'projetos') {
             resultsCount.textContent = '';
             resultsTerms.textContent = 'Carregando...';
             return;
         }
+        if (!isNormasLoaded && !normasLoadError && activeMode === 'normas') {
+            resultsCount.textContent = '';
+            resultsTerms.textContent = 'Carregando normas...';
+            return;
+        }
 
         // Caso de erro
-        if (loadError) {
+        if ((activeMode === 'projetos' && loadError) || (activeMode === 'normas' && normasLoadError)) {
             return; // showLoadError já tratou
         }
 
@@ -776,10 +1162,13 @@
         }
 
         // Formata contagem
+        const modeLabel = activeMode === 'normas' ? 'norma' : 'resultado';
+        const modeLabelPlural = activeMode === 'normas' ? 'normas' : 'resultados';
+
         if (displayedCount < total) {
-            resultsCount.innerHTML = ` <strong>${total}</strong> resultados`;
+            resultsCount.innerHTML = ` <strong>${total}</strong> ${modeLabelPlural}`;
         } else {
-            resultsCount.innerHTML = `<strong>${total}</strong> resultado${total !== 1 ? 's' : ''}`;
+            resultsCount.innerHTML = `<strong>${total}</strong> ${total !== 1 ? modeLabelPlural : modeLabel}`;
         }
 
         // Formata termos com highlight
@@ -829,6 +1218,15 @@
                 <p>Busca exata: Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> se estiverem separadas por outras palavras.</p>
                 <p>Veja também minha ferramenta para abrir projetos e normas diretamente pelo número: <a
                         href="https://prototiposlegisla.github.io/abrir-projetos/">Link</a></p>
+            </div>
+            <div class="info-section">
+                <p class="info-title">PESQUISA DE NORMAS</p>
+                <p>Use o botão <strong>NORMAS</strong> acima da barra de busca para pesquisar normas promulgadas (leis, atos, resoluções, decretos legislativos e emendas à Lei Orgânica).</p>
+                <ul>
+                    <li><strong>Busca por número da norma:</strong> No modo NORMAS, comece com <code>n</code> seguido do número. Ex: <code>n18000</code>.</li>
+                    <li><strong>Busca por projeto de origem:</strong> No modo NORMAS, comece com <code>p</code> seguido do número do projeto. Ex: <code>p396</code> encontra normas originadas de projetos de número 396.</li>
+                </ul>
+                <p>Quando uma norma tem projeto de origem (a partir de 1991), são exibidos botões para acessar o projeto nos repositórios SPLegis e Biblioteca.</p>
             </div>
         `;
         return info;
@@ -893,7 +1291,8 @@
         toggleInfoField(false);
 
         // Verifica se ainda está carregando
-        if (!isDataLoaded) {
+        const dataReady = activeMode === 'projetos' ? isDataLoaded : isNormasLoaded;
+        if (!dataReady) {
             updateResultsLog(query);
             return;
         }
@@ -986,6 +1385,32 @@
     }
 
     /**
+     * Handler para troca de modo (projetos/normas)
+     */
+    function onToggleMode(e) {
+        const btn = e.target.closest('.toggle-btn');
+        if (!btn || btn.classList.contains('active')) return;
+
+        const newMode = btn.dataset.mode;
+        activeMode = newMode;
+
+        // Atualiza UI do toggle
+        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Limpa resultados atuais
+        clearResults();
+
+        // Re-executa busca se houver input
+        if (searchInput.value.trim()) {
+            performSearch();
+        } else {
+            toggleInfoField(true);
+            updateResultsLog(null);
+        }
+    }
+
+    /**
      * Handler para fechar teclado ao clicar fora
      */
     function onDocumentClick(e) {
@@ -1042,7 +1467,11 @@
             return;
         }
 
-
+        // Captura e configura toggle
+        toggleContainer = document.querySelector('.search-toggle');
+        if (toggleContainer) {
+            toggleContainer.addEventListener('click', onToggleMode);
+        }
 
         // Configura input
         setupSearchInput();

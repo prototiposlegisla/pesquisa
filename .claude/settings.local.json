@@ -5,7 +5,24 @@
       "Bash(node test-search.js:*)",
       "Bash(node -e:*)",
       "Bash(node test-falso-positivo.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "WebFetch(domain:www.saopaulo.sp.leg.br)",
+      "mcp__desktop-commander__interact_with_process",
+      "mcp__desktop-commander__read_process_output",
+      "mcp__desktop-commander__force_terminate",
+      "Bash(powershell:*)",
+      "Bash(python:*)",
+      "Bash(where:*)",
+      "Bash(py -3:*)",
+      "Bash(dir:*)",
+      "Bash(python3:*)",
+      "Bash(done)",
+      "Bash(for file in \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-atual.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-2020.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-2000.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-1990.json\" \"C:\\\\Users\\\\kauen\\\\Documents\\\\ferramentas\\\\legislasampa\\\\pesquisa\\\\dados\\\\normas\\\\normas-1950.json\")",
+      "Bash(do grep -o '\\\\[\"\"[^\"\"]*\"\",' \"$file\")",
+      "Bash(for tipo in \"ATO\" \"DL\" \"ELO\" \"LEI\" \"RES\")",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(git ls-tree:*)"
     ]
   }
 }
