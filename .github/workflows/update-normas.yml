@@ -30,7 +30,7 @@ jobs:
         continue-on-error: true
         run: |
           git fetch origin gh-pages --depth=1 || echo "No gh-pages branch found"
-          git checkout origin/gh-pages -- dados/ version.json || echo "No existing data found"
+          git checkout origin/gh-pages -- dados/ || echo "No existing data found"
 
       - name: Determine layers to update
         id: layers
@@ -62,9 +62,6 @@ jobs:
           else
             echo "No dados directory found"
           fi
-
-          # Copy version.json to root of public
-          if [ -f "dados/version.json" ]; then cp dados/version.json public/; fi
 
           # Copy frontend assets matching root structure
           cp index.html public/

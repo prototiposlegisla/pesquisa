@@ -2,16 +2,16 @@ name: Update Database
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # Daily at 05:00 UTC
+    - cron: '0 5 * * *'  # Daily at 05:00 UTC (02:00 SP)
   push:
     branches:
       - main
   workflow_dispatch:
     inputs:
       layers:
-        description: 'Layers to update (comma-separated, e.g. "atual,recente" or "all")'
+        description: 'Layers to update (comma-separated or "all")'
         required: true
-        default: 'auto'
+        default: 'all'
         type: string
 
 permissions:
@@ -33,37 +33,22 @@ jobs:
         continue-on-error: true
         run: |
           git fetch origin gh-pages --depth=1 || echo "No gh-pages branch found"
-          git checkout origin/gh-pages -- dados/ version.json || echo "No existing data found"
+          git checkout origin/gh-pages -- dados/ || echo "No existing data found"
 
       - name: Determine layers to update
         id: layers
         run: |
-          DATE_MD=$(date +%m-%d)
-          DATE_D=$(date +%d)
-          WEEKDAY=$(date +%u) # 1-7 (Mon-Sun)
           INPUT_LAYERS="${{ github.event.inputs.layers }}"
 
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "$INPUT_LAYERS" != "auto" ] && [ -n "$INPUT_LAYERS" ]; then
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "$INPUT_LAYERS" ]; then
             echo "layers=$INPUT_LAYERS" >> $GITHUB_OUTPUT
             echo "Running MANUAL update ($INPUT_LAYERS)"
           elif [ "${{ github.event_name }}" == "push" ]; then
             echo "layers=none" >> $GITHUB_OUTPUT
             echo "Running CODE-ONLY update (none)"
-          elif [ "$DATE_MD" == "01-01" ]; then
-            echo "layers=all" >> $GITHUB_OUTPUT
-            echo "Running YEARLY update (all)"
-          elif [ "$DATE_MD" == "07-01" ]; then
-            echo "layers=all" >> $GITHUB_OUTPUT
-            echo "Running SEMESTRAL update (all)"
-          elif [ "$DATE_D" == "01" ]; then
-            echo "layers=medio" >> $GITHUB_OUTPUT
-            echo "Running MONTHLY update (medio)"
-          elif [[ "$WEEKDAY" =~ ^[2-5]$ ]]; then
-            echo "layers=atual,recente" >> $GITHUB_OUTPUT
-            echo "Running WEEKDAY update (atual, recente)"
           else
-            echo "layers=atual" >> $GITHUB_OUTPUT
-            echo "Running STANDARD update (atual)"
+            echo "layers=all" >> $GITHUB_OUTPUT
+            echo "Running DAILY update (all — hash protege contra gravações desnecessárias)"
           fi
 
       - name: Install dependencies
@@ -78,17 +63,14 @@ jobs:
       - name: Prepare deployment
         run: |
           mkdir public
-          
+
           # Copy generated data (includes dados/version.json)
           if [ -d "dados" ]; then
             cp -r dados public/
           else
             echo "No dados directory found"
           fi
-          
-          # Copy version.json to root of public usually
-          if [ -f "dados/version.json" ]; then cp dados/version.json public/; fi
-          
+
           # Copy frontend assets matches root structure
           cp index.html public/
           if [ -d "assets" ]; then cp -r assets public/; fi

@@ -717,234 +717,148 @@ Salvar arquivo
 ```
 repo/
 ├── dados/
-│   ├── atual.json              # Ano corrente
-│   ├── recente.json            # 5 anos anteriores
-│   ├── medio.json              # 10 anos semi-estáveis
-│   ├── historico-a.json        # Histórico recente
-│   ├── historico-b.json        # Histórico antigo
-│   └── version.json            # Metadados
+│   ├── projetos/
+│   │   ├── projetos-atual.json         # Ano corrente
+│   │   ├── projetos-2021-2025.json     # Quinquênio fixo
+│   │   ├── projetos-2016-2020.json     # Quinquênio fixo
+│   │   ├── projetos-2011-2015.json     # Quinquênio fixo
+│   │   ├── projetos-2006-2010.json     # Quinquênio fixo
+│   │   ├── projetos-2001-2005.json     # Quinquênio fixo
+│   │   ├── projetos-1996-2000.json     # Quinquênio fixo
+│   │   ├── projetos-1991-1995.json     # Quinquênio fixo
+│   │   └── version.json                # Metadados + hashes
+│   └── normas/
+│       ├── normas-atual.json           # Ano corrente
+│       ├── normas-2020.json            # Década fixa
+│       ├── ...
+│       └── normas-version.json         # Metadados + hashes
 └── scripts/
-    └── atualizar.py            # Script de atualização
+    ├── atualizar.py                    # Script de projetos
+    └── atualizar_normas.py             # Script de normas
 ```
 
-### 6.2 Definição das Camadas (Relativas ao Ano Corrente)
+### 6.2 Definição das Camadas (Quinquênios Fixos)
 
-**Cálculo dinâmico baseado em `ANO_CORRENTE`:**
+As camadas usam períodos fixos de 5 anos referentes a anos absolutos, não relativos ao ano corrente. Isso permite detecção de mudanças via hash SHA256.
 
-```python
-ANO_CORRENTE = datetime.now().year  # Ex: 2026
-ANO_MAIS_ANTIGO = 1991  # Fixo
+**Camada ATUAL (dinâmica):**
 ```
-
-**Camada 1 - ATUAL:**
-```
-Arquivo: dados/atual.json
+Arquivo: dados/projetos-atual.json
 Anos: ANO_CORRENTE
 Exemplo 2026: 2026
-Frequência: Diária
 ```
 
-**Camada 2 - RECENTE:**
+**Camada do quinquênio corrente (dinâmica):**
 ```
-Arquivo: dados/recente.json
-Anos: (ANO_CORRENTE - 5) até (ANO_CORRENTE - 1)
-Exemplo 2026: 2021-2025
-Frequência: Semanal
-```
-
-**Camada 3 - MEDIO:**
-```
-Arquivo: dados/medio.json
-Anos: (ANO_CORRENTE - 15) até (ANO_CORRENTE - 6)
-Exemplo 2026: 2011-2020
-Frequência: Semestral
+Apenas quando ano_corrente > primeiro ano do quinquênio.
+Em 2026: não existe (2026 é o primeiro ano do quinquênio 2026-2030)
+Em 2027: projetos-2026.json (2026)
+Em 2028: projetos-2026-2027.json (2026-2027)
+Em 2031: projetos-2026-2030.json (quinquênio completo, vira fixa)
 ```
 
-**Camada 4A - HISTORICO-A:**
+**Camadas fixas de quinquênios passados:**
 ```
-Arquivo: dados/historico-a.json
-Anos: Metade mais recente do histórico
-Cálculo:
-  hist_inicio = 1991
-  hist_fim = ANO_CORRENTE - 16
-  hist_meio = hist_inicio + ((hist_fim - hist_inicio + 1) / 2)
-  anos = hist_meio até hist_fim
-Exemplo 2026: 2001-2010
-Frequência: Anual
+projetos-2021-2025.json  (2021-2025)
+projetos-2016-2020.json  (2016-2020)
+projetos-2011-2015.json  (2011-2015)
+projetos-2006-2010.json  (2006-2010)
+projetos-2001-2005.json  (2001-2005)
+projetos-1996-2000.json  (1996-2000)
+projetos-1991-1995.json  (1991-1995)
 ```
 
-**Camada 4B - HISTORICO-B:**
-```
-Arquivo: dados/historico-b.json
-Anos: Metade mais antiga do histórico
-Cálculo:
-  anos = 1991 até (hist_meio - 1)
-Exemplo 2026: 1991-2000
-Frequência: Anual
-```
-
-**Divisão do histórico em 2 arquivos:**
-- Motivo: Blocos de 25+ anos causam timeout na API
-- Solução: Dividir em blocos de ~10-13 anos cada
+**Cada layer = 1 requisição à API (~5 anos, ~3500 projetos).**
 
 ---
 
-### 6.3 Arquivo version.json
+### 6.3 Detecção de Mudanças via Hash
 
-**Objetivo:** Metadados sobre cada camada, atualizado a cada execução.
+O script calcula um hash SHA256 do conteúdo JSON serializado de cada camada. Antes de salvar, compara com o hash armazenado em `version.json`. Só grava o arquivo se o conteúdo mudou.
+
+```python
+def content_hash(data):
+    raw = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+    return hashlib.sha256(raw.encode('utf-8')).hexdigest()
+```
+
+**Benefícios:**
+- Permite atualização diária de todas as camadas sem commits desnecessários
+- Camadas históricas (1991-2025) raramente mudam, hash evita regravação
+- Reduz ruído no histórico Git
+
+---
+
+### 6.4 Arquivo version.json
+
+**Objetivo:** Metadados sobre cada camada + hashes para detecção de mudanças. O frontend lê este arquivo para descobrir dinamicamente quais arquivos de dados carregar.
 
 **Estrutura:**
 ```json
 {
-  "lastUpdate": "2026-01-27T03:00:00Z",
+  "lastUpdate": "2026-01-27T03:00:00-03:00",
   "anoCorrente": 2026,
   "camadas": {
-    "atual": {
-      "arquivo": "dados/atual.json",
-      "anos": "2026-2026",
-      "projetos": 680,
-      "descricao": "Ano corrente (2026)"
+    "projetos-atual": {
+      "arquivo": "dados/projetos/projetos-atual.json",
+      "anos": "2026",
+      "projetos": 74,
+      "hash": "abc123..."
     },
-    "recente": {
-      "arquivo": "dados/recente.json",
+    "projetos-2021-2025": {
+      "arquivo": "dados/projetos/projetos-2021-2025.json",
       "anos": "2021-2025",
-      "projetos": 3400,
-      "descricao": "5 anos anteriores (2021 a 2025)"
-    },
-    "medio": {
-      "arquivo": "dados/medio.json",
-      "anos": "2011-2020",
-      "projetos": 6800,
-      "descricao": "10 anos semi-estáveis (2011 a 2020)"
-    },
-    "historico-a": {
-      "arquivo": "dados/historico-a.json",
-      "anos": "2001-2010",
-      "projetos": 6800,
-      "descricao": "Histórico recente (2001 a 2010)"
-    },
-    "historico-b": {
-      "arquivo": "dados/historico-b.json",
-      "anos": "1991-2000",
-      "projetos": 6800,
-      "descricao": "Histórico antigo (1991 a 2000)"
+      "projetos": 5740,
+      "hash": "def456..."
     }
-  }
+  },
+  "totalProjetos": 32464
 }
 ```
 
 ---
 
+### 6.5 Virada de Ano
+
+**Totalmente automática.** O script recalcula as layers em runtime:
+- Layer "atual" muda para o novo ano
+- Se necessário, cria layer do quinquênio corrente
+- Frontend descobre os novos arquivos via `version.json`
+
+**Exemplo: 2026 → 2027:**
+- `projetos-atual.json` passa a ser 2027
+- Nova layer `projetos-2026.json` é criada (2026)
+- Layers fixas permanecem iguais
+
+---
+
 ## 7. Automação via GitHub Actions
 
-### 7.1 Workflow: Atualização Diária
+### 7.1 Workflow Único: Atualização Diária
 
 ```yaml
-name: Atualização Diária
+name: Update Database
 on:
   schedule:
-    - cron: '0 3 * * 2-6'  # 3h AM de Terça a Sábado
-  workflow_dispatch:
-```
-
-**Executa:** Atualiza `atual.json` (Pula Domingo e Segunda pois não há novos projetos)
-**Duração esperada:** 10-15 segundos
-
----
-
-### 7.2 Workflow: Atualização Semanal
-
-```yaml
-name: Atualização Semanal
-on:
-  schedule:
-    - cron: '30 3 * * 0'  # 3h30 AM domingos
-  workflow_dispatch:
-```
-
-**Executa:** Atualiza `recente.json`
-**Duração esperada:** 15-20 segundos
-
----
-
-### 7.3 Workflow: Atualização Semestral
-
-```yaml
-name: Atualização Semestral
-on:
-  schedule:
-    - cron: '0 4 1 7 *'  # 4h AM em 1º julho
-  workflow_dispatch:
-```
-
-**Executa:** Atualiza `medio.json`
-**Duração esperada:** 30 segundos
-**Observação:** 1º de Janeiro é coberto pela Virada de Ano
-
----
-
-
-
-### 7.5 Workflow: Virada de Ano
-
-```yaml
-name: Virada de Ano - Reconstrução Total
-on:
-  schedule:
-    - cron: '0 8 1 1 *'  # 8h AM UTC em 1º janeiro (05:00 SP)
-  workflow_dispatch:
-```
-
-**Executa:** Atualiza TODAS as camadas
-**Motivo:** As faixas de anos mudam com o novo ano corrente. O horário de 08:00 UTC (05:00 SP) garante que a virada já ocorreu em ambos os servidores.
-**Duração esperada:** 2-3 minutos
-**Delays:** 15 segundos entre cada chamada
-
-**Comportamento esperado:**
-- Script recalcula automaticamente as faixas de anos
-- Arquivos são sobrescritos com novos conteúdos
-- Nomes dos arquivos permanecem os mesmos
-- Frontend não precisa de alteração
-
----
-
-### 7.6 Workflow: Atualização Manual (Forçada)
-
-```yaml
-name: Atualização Manual
-on:
+    - cron: '0 5 * * *'  # 05:00 UTC (02:00 SP), todos os dias
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
-      atual:
-        description: 'Atualizar atual?'
-        type: boolean
-        default: false
-      recente:
-        description: 'Atualizar recente?'
-        type: boolean
-        default: false
-      medio:
-        description: 'Atualizar medio?'
-        type: boolean
-        default: false
-      historico-a:
-        description: 'Atualizar historico-a?'
-        type: boolean
-        default: false
-      historico-b:
-        description: 'Atualizar historico-b?'
-        type: boolean
-        default: false
+      layers:
+        description: 'Layers to update (comma-separated or "all")'
+        default: 'all'
 ```
 
-**Uso:** Interface com checkboxes no GitHub Actions
-**Objetivo:** Forçar atualização de camadas específicas fora do cronograma
-**Exemplo:** Correção de dados em projeto de 1995 → marcar checkbox `historico-b`
+**Executa:** `python scripts/atualizar.py --layer all`
+**Duração esperada:** ~2 minutos (8 layers × 15s delay)
+**Proteção:** Hash SHA256 evita commits quando nada mudou
 
-**Implementação:**
-- Cada checkbox controla execução condicional de um step
-- Pode marcar múltiplas camadas simultaneamente
-- Delays de 15 segundos entre execuções
+O workflow é simplificado: roda `--layer all` diariamente. Não há mais necessidade de lógica semanal/mensal/semestral, pois o hash garante que só layers com mudanças reais são regravadas.
+
+### 7.2 Atualização Manual
+
+Via `workflow_dispatch` com input `layers` (ex: `atual`, `2021-2025`, ou `all`)
 
 ---
 
@@ -957,8 +871,8 @@ on:
 **Mitigações:**
 
 1. **Volume baixo:**
-   - Máximo 5 requisições/dia (rotinas normais)
-   - Máximo 12 requisições em dia de virada de ano
+   - Máximo 8 requisições/dia (todas as layers)
+   - Delay de 15 segundos entre requisições
 
 2. **Horário estratégico:**
    - Todas execuções na madrugada (2h-4h AM)
@@ -1449,17 +1363,17 @@ ESTATÍSTICAS ESPERADAS
 
 ### 12.1 Nomes de Arquivo
 
-**Sempre os mesmos nomes:**
-- `atual.json`, `recente.json`, `medio.json`, `historico-a.json`, `historico-b.json`
-- Conteúdo muda conforme ano, nomes permanecem fixos
-- Frontend nunca precisa atualizar URLs
+**Nomeados por período fixo:**
+- `projetos-atual.json` (ano corrente), `projetos-2021-2025.json`, `projetos-2016-2020.json`, etc.
+- Layers históricas nunca mudam de nome
+- Frontend descobre os arquivos via `version.json` (dinâmico)
 
 ### 12.2 Virada de Ano
 
 **Totalmente automática:**
-- Script detecta novo ano
-- Recalcula faixas automaticamente
-- Sobrescreve arquivos com nova estrutura
+- Script detecta novo ano e recalcula layers
+- Nova layer do quinquênio corrente é criada automaticamente
+- Frontend se adapta via `version.json`
 - Zero intervenção manual necessária
 
 ### 12.3 Sustentabilidade

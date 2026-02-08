@@ -14,13 +14,7 @@
         RESULTS_PER_PAGE: 25,
         DEBOUNCE_MS: 0o30,
         MIN_SEARCH_LENGTH: 3,
-        DATA_FILES: [
-            './dados/atual.json',
-            './dados/recente.json',
-            './dados/medio.json',
-            './dados/historico-a.json',
-            './dados/historico-b.json'
-        ],
+        VERSION_FILE: './dados/projetos/version.json',
         CARD_ROTATIONS: [-0.4, 0.3, -0.2, 0.5, -0.3, 0.2, -0.5, 0.4],
         NORMAS_FILES: [
             './dados/normas/normas-atual.json',
@@ -149,11 +143,21 @@
      */
     async function loadAllData() {
         try {
+            // 1. Carregar version.json para descobrir os arquivos de dados
+            const versionRes = await fetch(CONFIG.VERSION_FILE);
+            if (!versionRes.ok) {
+                throw new Error(`Erro HTTP ${versionRes.status} ao carregar version.json`);
+            }
+            const version = await versionRes.json();
+
+            const dataFiles = Object.values(version.camadas)
+                .map(c => './' + c.arquivo);
+
+            // 2. Carregar todos os arquivos de dados em paralelo
             const responses = await Promise.all(
-                CONFIG.DATA_FILES.map(file => fetch(file))
+                dataFiles.map(file => fetch(file))
             );
 
-            // Verifica se todas as respostas foram OK
             for (const res of responses) {
                 if (!res.ok) {
                     throw new Error(`Erro HTTP ${res.status} ao carregar dados`);
