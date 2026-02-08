@@ -1191,11 +1191,11 @@
                 <p>Para abrir, clique nos botões no canto superior direito dos cartões de resultado.</p>
                 <p>Para projetos, são 3 repositórios:</p>
                 <ul>
-                    <li>SPLegis Consulta/SPLegis Intranet/Biblioteca</li>
+                    <li>SPLegis Consulta/SPLegis Intranet/Biblioteca da CMSP</li>
                 </ul>
                 <p>Para normas, em geral, são 3 repositórios:</p>
                 <ul>
-                    <li>PLP/Biblioteca/Prefeitura</li>
+                    <li>PLP/Biblioteca da CMSP/Prefeitura</li>
                 </ul>
                 <p>Se houver norma decorrente do projeto, ou projeto que gerou a norma, também serão exibidos botões para estes.</p>
             </div>
