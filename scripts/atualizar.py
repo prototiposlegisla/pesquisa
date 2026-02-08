@@ -489,6 +489,14 @@ def main():
     for k in old_keys:
         del version_info["camadas"][k]
 
+    # Ordenar camadas por ano DESC (mais recente primeiro) para manter cronologia
+    camadas_ordenadas = dict(sorted(
+        version_info["camadas"].items(),
+        key=lambda item: int(item[1]["anos"].split("-")[-1]),
+        reverse=True
+    ))
+    version_info["camadas"] = camadas_ordenadas
+
     # Calcular total
     version_info["totalProjetos"] = sum(
         info.get("projetos", 0) for info in version_info["camadas"].values()

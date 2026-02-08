@@ -163,7 +163,13 @@
             }
             const version = await versionRes.json();
 
+            // Ordenar camadas por ano DESC para manter cronologia (código DESC)
             const dataFiles = Object.values(version.camadas)
+                .sort((a, b) => {
+                    const anoA = parseInt(a.anos.split('-').pop());
+                    const anoB = parseInt(b.anos.split('-').pop());
+                    return anoB - anoA;
+                })
                 .map(c => './' + c.arquivo);
 
             // 2. Carregar todos os arquivos de dados em paralelo
