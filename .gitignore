@@ -1,3 +1,4 @@
 dados/
 version.json
 nul
+__pycache__/

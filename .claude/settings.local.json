@@ -14,7 +14,8 @@
       "Bash(python:*)",
       "Bash(where:*)",
       "Bash(py -3:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
