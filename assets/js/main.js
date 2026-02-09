@@ -776,7 +776,7 @@
         const projectId = document.createElement('div');
         projectId.className = 'project-id';
 
-        const idRotation = (Math.random() * 8 - 4).toFixed(0);
+        const idRotation = '-2';
         projectId.innerHTML = `
             <span class="id-type">${highlightText(tipo, highlightTerms)}</span>
             <span class="id-number" style="transform: rotate(${idRotation}deg);">${highlightText(numero, highlightTerms)}</span>
@@ -923,7 +923,7 @@
         const normaId = document.createElement('div');
         normaId.className = 'project-id';
 
-        const idRotation = (Math.random() * 8 - 4).toFixed(0);
+        const idRotation = '-2';
         normaId.innerHTML = `
             <span class="id-type">${highlightText(tipo, highlightTerms)}</span>
             <span class="id-number" style="transform: rotate(${idRotation}deg);">${highlightText(numero, highlightTerms)}</span>
