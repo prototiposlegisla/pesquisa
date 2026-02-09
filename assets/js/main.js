@@ -1041,20 +1041,26 @@
         body.innerHTML = `<p class="ementa">${ementaHtml}</p>`;
         card.appendChild(body);
 
-        // ===== REFERÊNCIA AO PROJETO (se preenchido e ano >= 1991) =====
+        // ===== REFERÊNCIA AO PROJETO (se preenchido) =====
         if (projeto) {
             const parsed = parseProjetoReference(projeto);
-            if (parsed && parseInt(parsed.ano) >= 1991) {
+            if (parsed) {
+                const anoInt = parseInt(parsed.ano);
+                let actionsHtml = '';
+                if (anoInt >= 1991) {
+                    actionsHtml += `<a href="${buildSPLegisURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="SPLegis Consulta">SPL</a>`;
+                    actionsHtml += `<span class="separator-pipe">/</span>`;
+                    actionsHtml += `<a href="${buildIntranetURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="SPLegis Intranet">INT</a>`;
+                    actionsHtml += `<span class="separator-pipe">/</span>`;
+                }
+                actionsHtml += `<a href="${buildBibliotecaProjetoURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="Biblioteca">BIB</a>`;
+
                 const projRef = document.createElement('div');
                 projRef.className = 'norma-project-ref';
                 projRef.innerHTML = `
                     <span class="ref-label">${highlightText(projeto, highlightTerms)}</span>
                     <div class="ref-actions">
-                        <a href="${buildSPLegisURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="SPLegis Consulta">SPL</a>
-                        <span class="separator-pipe">/</span>
-                        <a href="${buildIntranetURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="SPLegis Intranet">INT</a>
-                        <span class="separator-pipe">/</span>
-                        <a href="${buildBibliotecaProjetoURL(parsed.tipo, parsed.numero, parsed.ano)}" class="action-btn" title="Biblioteca">BIB</a>
+                        ${actionsHtml}
                     </div>
                 `;
                 card.appendChild(projRef);
