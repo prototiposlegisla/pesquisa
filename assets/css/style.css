@@ -147,7 +147,7 @@ body::before {
 }
 
 .toggle-btn {
-    font-family: var(--font-mono);
+    font-family: var(--font-ui-serif);
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     padding: 6px 0;
