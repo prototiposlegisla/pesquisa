@@ -1672,6 +1672,17 @@
             searchIcon.addEventListener('click', () => searchInput.focus());
         }
 
+        // Atalhos globais: Esc (limpar busca) e / (focar busca)
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onClearClick();
+            } else if (e.key === '/' && document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
         // Fecha teclado ao clicar fora
         document.addEventListener('click', onDocumentClick);
 
