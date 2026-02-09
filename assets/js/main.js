@@ -754,6 +754,20 @@
     // =========================================
 
     /**
+     * Gera um hash numérico a partir de uma string
+     */
+    function stringToHash(string) {
+        let hash = 0;
+        if (string.length === 0) return hash;
+        for (let i = 0; i < string.length; i++) {
+            const char = string.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        return hash;
+    }
+
+    /**
      * Cria elemento de card para um projeto
      */
     function createCard(row, highlightTerms, index) {
@@ -877,7 +891,9 @@
             palavras.forEach(palavra => {
                 const chip = document.createElement('span');
                 chip.className = 'keyword-chip';
-                const chipRotation = (Math.random() * 1 - 0.5).toFixed(1);
+                const hash = stringToHash(palavra.trim());
+                // Rotação determinística suave (entre -0.5deg e 0.5deg)
+                const chipRotation = ((Math.abs(hash) % 11 - 5) / 10).toFixed(1);
                 chip.style.transform = `rotate(${chipRotation}deg)`;
                 chip.innerHTML = highlightText(palavra.trim(), highlightTerms);
                 keywords.appendChild(chip);
@@ -1059,7 +1075,9 @@
             palavras.forEach(palavra => {
                 const chip = document.createElement('span');
                 chip.className = 'keyword-chip';
-                const chipRotation = (Math.random() * 1 - 0.5).toFixed(1);
+                const hash = stringToHash(palavra.trim());
+                // Rotação determinística suave (entre -0.5deg e 0.5deg)
+                const chipRotation = ((Math.abs(hash) % 11 - 5) / 10).toFixed(1);
                 chip.style.transform = `rotate(${chipRotation}deg)`;
                 chip.innerHTML = highlightText(palavra.trim(), highlightTerms);
                 keywords.appendChild(chip);
