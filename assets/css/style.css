@@ -794,6 +794,17 @@ body::before {
         padding: 5px 0;
     }
 
+    /* Paginação mobile */
+    .pagination button {
+        padding: 5px 8px;
+        min-width: 30px;
+        font-size: 0.7rem;
+    }
+
+    .pagination {
+        gap: 3px;
+    }
+
     /* Ajustes Mobile para Norma e Carimbo */
     .norma-wrapper {
         padding-left: 0;
@@ -1009,32 +1020,60 @@ body::before {
 }
 
 /* =========================================
-   BOTÃO CARREGAR MAIS
+   PAGINAÇÃO
    ========================================= */
 
-.load-more-btn {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    margin: 04px 0;
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin: 4px 0;
+    padding: 16px 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+}
+
+.pagination button {
     background: transparent;
-    border: 1px dashed var(--border-warm);
+    border: 1px dashed rgba(87, 83, 78, 0.3);
     border-radius: 2px;
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     cursor: pointer;
+    padding: 6px 10px;
+    min-width: 34px;
+    text-align: center;
     transition: all 0.2s ease;
 }
 
-.load-more-btn:hover {
-    background: rgba(60, 50, 40, 0.03);
+.pagination button:hover:not(:disabled):not(.active) {
+    background: rgba(60, 50, 40, 0.05);
     border-color: var(--text-secondary);
     color: var(--text-primary);
 }
 
-.load-more-btn:active {
-    transform: translateY(1px);
+.pagination button.active {
+    background: rgba(60, 50, 40, 0.08);
+    border: 1px solid var(--text-secondary);
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.pagination button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.pagination .ellipsis {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    padding: 6px 4px;
+    cursor: default;
+    user-select: none;
 }
 
 /* =========================================

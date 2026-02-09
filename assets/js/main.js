@@ -92,6 +92,7 @@
     let loadError = false;
     let currentResults = [];
     let displayedCount = 0;
+    let currentPage = 0;
     let currentSearchTerms = [];
     let debounceTimer = null;
 
@@ -107,7 +108,7 @@
     // =========================================
 
     let searchInput, clearBtn, resultsLog, resultsCount, resultsTerms, mainContainer;
-    let loadMoreBtn, infoField, toggleContainer;
+    let paginationContainer, infoField, toggleContainer;
 
     // =========================================
     // MÓDULO: NORMALIZAÇÃO DE TEXTO
@@ -1130,21 +1131,18 @@
     /**
      * Renderiza os resultados na página
      */
-    function renderResults(append = false) {
-        if (!append) {
-            // Remove cards existentes (exceto elementos fixos)
-            const existingCards = mainContainer.querySelectorAll('.card');
-            existingCards.forEach(card => card.remove());
-            displayedCount = 0;
-        }
+    function renderResults(shouldScroll) {
+        // Sempre limpa cards existentes
+        const existingCards = mainContainer.querySelectorAll('.card');
+        existingCards.forEach(card => card.remove());
 
         // Esconde campo de informações quando há resultados
         if (infoField) {
             infoField.style.display = 'none';
         }
 
-        // Calcula fatia a renderizar
-        const start = displayedCount;
+        // Calcula fatia a renderizar baseado em currentPage
+        const start = currentPage * CONFIG.RESULTS_PER_PAGE;
         const end = Math.min(start + CONFIG.RESULTS_PER_PAGE, currentResults.length);
         const slice = currentResults.slice(start, end);
 
@@ -1153,36 +1151,116 @@
 
         slice.forEach((row, index) => {
             const card = activeMode === 'normas'
-                ? createNormaCard(row, currentSearchTerms, displayedCount + index)
-                : createCard(row, currentSearchTerms, displayedCount + index);
+                ? createNormaCard(row, currentSearchTerms, start + index)
+                : createCard(row, currentSearchTerms, start + index);
             fragment.appendChild(card);
         });
 
-        // Insere antes do botão "Carregar Mais" ou no final
-        if (loadMoreBtn && loadMoreBtn.parentNode === mainContainer) {
-            mainContainer.insertBefore(fragment, loadMoreBtn);
+        // Insere antes do container de paginação ou no final
+        if (paginationContainer && paginationContainer.parentNode === mainContainer) {
+            mainContainer.insertBefore(fragment, paginationContainer);
         } else {
             mainContainer.appendChild(fragment);
         }
 
         displayedCount = end;
 
-        // Atualiza botão "Carregar Mais"
-        updateLoadMoreButton();
+        // Atualiza paginação
+        updatePagination();
+
+        // Scroll para o topo ao mudar de página
+        if (shouldScroll) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }
 
     /**
-     * Atualiza visibilidade do botão "Carregar Mais"
+     * Atualiza controles de paginação
      */
-    function updateLoadMoreButton() {
-        if (!loadMoreBtn) return;
+    function updatePagination() {
+        if (!paginationContainer) return;
 
-        if (currentResults.length > displayedCount) {
-            loadMoreBtn.style.display = 'block';
-            loadMoreBtn.disabled = false;
-        } else {
-            loadMoreBtn.style.display = 'none';
+        const total = currentResults.length;
+        const totalPages = Math.ceil(total / CONFIG.RESULTS_PER_PAGE);
+
+        // Se 1 página ou menos, esconde paginação
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
         }
+
+        paginationContainer.style.display = 'flex';
+        paginationContainer.innerHTML = '';
+
+        const current = currentPage; // 0-indexed
+
+        // Botão anterior
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'prev';
+        prevBtn.textContent = '<';
+        prevBtn.disabled = current === 0;
+        prevBtn.addEventListener('click', function () { goToPage(current - 1); });
+        paginationContainer.appendChild(prevBtn);
+
+        // Calcula quais páginas mostrar
+        const pages = [];
+        pages.push(0); // Primeira sempre
+
+        const windowStart = Math.max(1, current - 1);
+        const windowEnd = Math.min(totalPages - 2, current + 1);
+
+        for (let i = windowStart; i <= windowEnd; i++) {
+            pages.push(i);
+        }
+
+        if (totalPages > 1) {
+            pages.push(totalPages - 1); // Última sempre
+        }
+
+        // Remove duplicatas e ordena
+        const uniquePages = [...new Set(pages)].sort((a, b) => a - b);
+
+        // Renderiza botões com reticências
+        let lastPage = -1;
+        uniquePages.forEach(function (page) {
+            // Adiciona reticências se há gap
+            if (lastPage !== -1 && page - lastPage > 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'ellipsis';
+                ellipsis.textContent = '...';
+                paginationContainer.appendChild(ellipsis);
+            }
+
+            const btn = document.createElement('button');
+            btn.textContent = page + 1; // Exibe 1-indexed
+            if (page === current) {
+                btn.className = 'active';
+            }
+            btn.addEventListener('click', function () { goToPage(page); });
+            paginationContainer.appendChild(btn);
+
+            lastPage = page;
+        });
+
+        // Botão próxima
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'next';
+        nextBtn.textContent = '>';
+        nextBtn.disabled = current === totalPages - 1;
+        nextBtn.addEventListener('click', function () { goToPage(current + 1); });
+        paginationContainer.appendChild(nextBtn);
+    }
+
+    /**
+     * Navega para uma página específica
+     */
+    function goToPage(page) {
+        const totalPages = Math.ceil(currentResults.length / CONFIG.RESULTS_PER_PAGE);
+        if (page < 0 || page >= totalPages) return;
+        currentPage = page;
+        renderResults(true);
+        const query = parseSearchQuery(searchInput.value);
+        updateResultsLog(query);
     }
 
     /**
@@ -1387,7 +1465,8 @@
         // Executa busca
         currentResults = executeSearch(query);
 
-        // Renderiza
+        // Renderiza (reset para página 0, sem scroll)
+        currentPage = 0;
         renderResults(false);
         updateResultsLog(query);
     }
@@ -1399,14 +1478,15 @@
         currentResults = [];
         currentSearchTerms = [];
         displayedCount = 0;
+        currentPage = 0;
 
         // Remove cards
         const cards = mainContainer.querySelectorAll('.card');
         cards.forEach(card => card.remove());
 
-        // Esconde botão carregar mais
-        if (loadMoreBtn) {
-            loadMoreBtn.style.display = 'none';
+        // Esconde paginação
+        if (paginationContainer) {
+            paginationContainer.style.display = 'none';
         }
     }
 
@@ -1446,15 +1526,6 @@
         toggleInfoField(true);
         updateResultsLog(null);
         searchInput.focus();
-    }
-
-    /**
-     * Handler para botão carregar mais
-     */
-    function onLoadMoreClick() {
-        renderResults(true);
-        const query = parseSearchQuery(searchInput.value);
-        updateResultsLog(query);
     }
 
     /**
@@ -1511,16 +1582,14 @@
     }
 
     /**
-     * Cria botão "Carregar Mais"
+     * Cria container de paginação
      */
-    function createLoadMoreButton() {
-        const btn = document.createElement('button');
-        btn.className = 'load-more-btn';
-        btn.textContent = '[carregar mais]';
-        btn.style.display = 'none';
-        btn.addEventListener('click', onLoadMoreClick);
-        mainContainer.appendChild(btn);
-        return btn;
+    function createPaginationContainer() {
+        const div = document.createElement('div');
+        div.className = 'pagination';
+        div.style.display = 'none';
+        mainContainer.appendChild(div);
+        return div;
     }
 
     /**
@@ -1553,8 +1622,8 @@
         infoField = createInfoField();
         mainContainer.appendChild(infoField);
 
-        // Cria botão carregar mais
-        loadMoreBtn = createLoadMoreButton();
+        // Cria container de paginação
+        paginationContainer = createPaginationContainer();
 
         // Limpa log inicial
         resultsCount.textContent = '';
