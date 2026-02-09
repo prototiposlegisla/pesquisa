@@ -1189,6 +1189,13 @@
      * Atualiza o log de resultados
      */
     function updateResultsLog(query) {
+        // Caso de input vazio: nunca mostra "Carregando..." se não há busca
+        if (!query || query.type === 'empty') {
+            resultsCount.textContent = '';
+            resultsTerms.textContent = '';
+            return;
+        }
+
         // Caso de carregando (só mostra se o usuário já digitou algo)
         if (!isDataLoaded && !loadError && activeMode === 'projetos') {
             resultsCount.textContent = '';
@@ -1204,13 +1211,6 @@
         // Caso de erro
         if ((activeMode === 'projetos' && loadError) || (activeMode === 'normas' && normasLoadError)) {
             return; // showLoadError já tratou
-        }
-
-        // Caso de input vazio ou muito curto (se não for busca numérica/norma)
-        if (!query || query.type === 'empty') {
-            resultsCount.textContent = '';
-            resultsTerms.textContent = '';
-            return;
         }
 
         // Verifica se tem termos suficientes APENAS se for busca normal
