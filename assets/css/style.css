@@ -889,7 +889,7 @@ body::before {
 
     /* Efeitos de realismo */
     mix-blend-mode: multiply;
-    opacity: 0.75;
+    opacity: 0.82;
 
     /* Aplica o filtro SVG de textura de tinta */
     filter: url(#stamp-texture);
@@ -1049,7 +1049,7 @@ body::before {
 
 .pagination button {
     background: transparent;
-    border: 1px dashed rgba(87, 83, 78, 0.3);
+    border: 1px solid rgba(87, 83, 78, 0.18);
     border-radius: 2px;
     font-family: var(--font-mono);
     font-size: 0.8rem;
@@ -1087,7 +1087,7 @@ body::before {
 
 .pagination .goto-btn {
     background: transparent;
-    border: 1px dashed rgba(87, 83, 78, 0.3);
+    border: 1px solid rgba(87, 83, 78, 0.18);
     border-radius: 2px;
     font-family: var(--font-mono);
     font-size: 0.7rem;
@@ -1173,7 +1173,7 @@ body::before {
     right: 30px;
     width: 44px;
     height: 44px;
-    background: #6b6b6b;
+    background: #7a6e63;
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -1201,7 +1201,7 @@ body::before {
 }
 
 .back-to-top:hover {
-    background: #505050;
+    background: #5a4e43;
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.2),
         0 6px 20px rgba(0, 0, 0, 0.15);
@@ -1209,7 +1209,7 @@ body::before {
 
 .back-to-top:active {
     transform: scale(0.95);
-    background: #404040;
+    background: #4a3e33;
 }
 
 .back-to-top svg {
