@@ -1194,14 +1194,6 @@
 
         const current = currentPage; // 0-indexed
 
-        // Botão anterior
-        const prevBtn = document.createElement('button');
-        prevBtn.className = 'prev';
-        prevBtn.textContent = '<';
-        prevBtn.disabled = current === 0;
-        prevBtn.addEventListener('click', function () { goToPage(current - 1); });
-        paginationContainer.appendChild(prevBtn);
-
         // Calcula quais páginas mostrar
         const pages = [];
         pages.push(0); // Primeira sempre
@@ -1242,13 +1234,51 @@
             lastPage = page;
         });
 
-        // Botão próxima
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'next';
-        nextBtn.textContent = '>';
-        nextBtn.disabled = current === totalPages - 1;
-        nextBtn.addEventListener('click', function () { goToPage(current + 1); });
-        paginationContainer.appendChild(nextBtn);
+        // Botão "Ir para" com input
+        var goToWrapper = document.createElement('span');
+        goToWrapper.className = 'goto-wrapper';
+
+        var goToBtn = document.createElement('button');
+        goToBtn.className = 'goto-btn';
+        goToBtn.textContent = 'ir para';
+        goToWrapper.appendChild(goToBtn);
+
+        var goToInput = document.createElement('input');
+        goToInput.type = 'text';
+        goToInput.inputMode = 'numeric';
+        goToInput.className = 'goto-input';
+        goToInput.placeholder = '#';
+        goToInput.setAttribute('aria-label', 'Ir para página');
+        goToInput.style.display = 'none';
+        goToWrapper.appendChild(goToInput);
+
+        function showInput() {
+            goToBtn.style.display = 'none';
+            goToInput.style.display = '';
+            goToInput.value = '';
+            goToInput.focus();
+        }
+        function hideInput() {
+            goToInput.style.display = 'none';
+            goToBtn.style.display = '';
+        }
+        function commitInput() {
+            var val = parseInt(goToInput.value, 10);
+            if (!isNaN(val) && val >= 1 && val <= totalPages) {
+                goToPage(val - 1);
+            } else {
+                hideInput();
+            }
+        }
+
+        goToBtn.addEventListener('click', showInput);
+        goToInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); commitInput(); }
+            if (e.key === 'Escape') { hideInput(); }
+        });
+        goToInput.addEventListener('blur', function () { hideInput(); });
+
+        paginationContainer.appendChild(goToWrapper);
     }
 
     /**

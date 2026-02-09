@@ -801,6 +801,17 @@ body::before {
         font-size: 0.7rem;
     }
 
+    .pagination .goto-btn {
+        padding: 5px 8px;
+        font-size: 0.65rem;
+    }
+
+    .pagination .goto-input {
+        padding: 4px 3px;
+        font-size: 0.7rem;
+        width: 3.5ch;
+    }
+
     .pagination {
         gap: 3px;
     }
@@ -1066,6 +1077,50 @@ body::before {
 .pagination button:disabled {
     opacity: 0.3;
     cursor: default;
+}
+
+.pagination .goto-wrapper {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+}
+
+.pagination .goto-btn {
+    background: transparent;
+    border: 1px dashed rgba(87, 83, 78, 0.3);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px 10px;
+    transition: all 0.2s ease;
+    text-transform: lowercase;
+}
+
+.pagination .goto-btn:hover {
+    background: rgba(60, 50, 40, 0.05);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+.pagination .goto-input {
+    background: rgba(60, 50, 40, 0.06);
+    border: 1px solid var(--text-secondary);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    text-align: center;
+    padding: 5px 4px;
+    width: 4ch;
+    box-sizing: content-box;
+}
+
+.pagination .goto-input:focus {
+    outline: none;
+    border-color: var(--text-primary);
+    background: rgba(60, 50, 40, 0.1);
 }
 
 .pagination .ellipsis {
