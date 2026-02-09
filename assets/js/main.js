@@ -700,6 +700,33 @@
     }
 
     /**
+     * Aplica highlight no campo de partido, tratando termos entre parênteses.
+     * Termos entre parênteses na query (ex: "(pt)") exigem match EXATO com o partido,
+     * para que "(psd)" não grife parcialmente "PSDB".
+     * Termos normais passam pelo highlightText padrão.
+     */
+    function highlightParty(partyText, terms) {
+        if (!partyText || !terms || terms.length === 0) return escapeHtml(partyText);
+
+        const normalizedParty = normalizeText(partyText);
+
+        // Primeiro, verifica se algum termo entre parênteses casa EXATAMENTE com o partido
+        for (let i = 0; i < terms.length; i++) {
+            const parenMatch = terms[i].value.match(/^\((.+)\)$/);
+            if (parenMatch && normalizedParty === parenMatch[1]) {
+                const colorClass = i < HIGHLIGHT_COLORS.length
+                    ? HIGHLIGHT_COLORS[i]
+                    : 'hl-gray';
+                return `<span class="${colorClass}-full">${escapeHtml(partyText)}</span>`;
+            }
+        }
+
+        // Senão, filtra os termos entre parênteses e aplica highlight normal com os demais
+        const nonParenTerms = terms.filter(term => !term.value.match(/^\((.+)\)$/));
+        return highlightText(partyText, nonParenTerms);
+    }
+
+    /**
      * Cria padrão de regex flexível que casa texto com ou sem acentos
      */
     function createFlexiblePattern(normalizedTerm) {
@@ -865,9 +892,10 @@
                 // Separa nome e partido: "NOME (PARTIDO)"
                 const match = autor.match(/^(.+?)\s*\((.+?)\)$/);
                 if (match) {
+                    const partyText = match[2].trim();
                     authorItem.innerHTML = `
                         <span class="author-name">${highlightText(match[1].trim(), highlightTerms)}</span>
-                        <span class="author-party">${highlightText(match[2].trim(), highlightTerms)}</span>
+                        <span class="author-party">${highlightParty(partyText, highlightTerms)}</span>
                     `;
                 } else {
                     // Sem partido (ex: Mesa Diretora)
@@ -1051,9 +1079,10 @@
                 authorItem.className = 'author-item';
                 const match = autor.match(/^(.+?)\s*\((.+?)\)$/);
                 if (match) {
+                    const partyText = match[2].trim();
                     authorItem.innerHTML = `
                         <span class="author-name">${highlightText(match[1].trim(), highlightTerms)}</span>
-                        <span class="author-party">${highlightText(match[2].trim(), highlightTerms)}</span>
+                        <span class="author-party">${highlightParty(partyText, highlightTerms)}</span>
                     `;
                 } else {
                     authorItem.innerHTML = `
