@@ -72,16 +72,15 @@
     };
 
     // Sequência de cores para highlight (classes CSS)
-    // Ordem: ciano, amarelo, verde, magenta, laranja
     const HIGHLIGHT_COLORS = [
-        'hl-1', // ciano
-        'hl-2', // amarelo
-        'hl-3', // verde
-        'hl-4', // magenta
-        'hl-5', // laranja
-        'hl-6', // marrom (era roxo)
-        'hl-7', // vermelho
-        'hl-8'  // roxo (era marrom)
+        'hl-1',
+        'hl-2',
+        'hl-3',
+        'hl-4',
+        'hl-5',
+        'hl-6',
+        'hl-7',
+        'hl-8'
     ];
 
     // =========================================
@@ -697,7 +696,7 @@
             return `<span class="${colorClass}-full">${match}</span>`;
         });
 
-        return result;
+        // return result;
     }
 
     /**

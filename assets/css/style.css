@@ -956,7 +956,7 @@ body::before {
    ========================================= */
 
 .info-field {
-    background: var(--paper-cream);
+    /* background: var(--paper-cream); */
     /* border: 1px solid var(--border-warm);
     border-radius: 2px; */
     padding: 1px 04px;
