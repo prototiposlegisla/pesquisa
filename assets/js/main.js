@@ -95,6 +95,7 @@
     let currentPage = 0;
     let currentSearchTerms = [];
     let debounceTimer = null;
+    let pendingPageFromURL = null; // Página pendente restaurada da URL
 
     // Estado de normas
     let allNormasData = [];
@@ -197,6 +198,17 @@
             // Se havia uma busca pendente, executa agora
             if (searchInput && searchInput.value.trim()) {
                 performSearch();
+                // Restaura página da URL se necessário
+                if (pendingPageFromURL !== null && activeMode === 'projetos') {
+                    const totalPages = Math.ceil(currentResults.length / CONFIG.RESULTS_PER_PAGE);
+                    if (pendingPageFromURL < totalPages) {
+                        currentPage = pendingPageFromURL;
+                        renderResults(false);
+                        const query = parseSearchQuery(searchInput.value);
+                        updateResultsLog(query);
+                    }
+                    pendingPageFromURL = null;
+                }
             }
 
             // Após carregar projetos, inicia carregamento de normas em background
@@ -253,6 +265,17 @@
             // Se o usuário está no modo normas e tinha busca pendente, executa
             if (activeMode === 'normas' && searchInput && searchInput.value.trim()) {
                 performSearch();
+                // Restaura página da URL se necessário
+                if (pendingPageFromURL !== null) {
+                    const totalPages = Math.ceil(currentResults.length / CONFIG.RESULTS_PER_PAGE);
+                    if (pendingPageFromURL < totalPages) {
+                        currentPage = pendingPageFromURL;
+                        renderResults(false);
+                        const query = parseSearchQuery(searchInput.value);
+                        updateResultsLog(query);
+                    }
+                    pendingPageFromURL = null;
+                }
             }
 
         } catch (error) {
@@ -1291,6 +1314,7 @@
         renderResults(true);
         const query = parseSearchQuery(searchInput.value);
         updateResultsLog(query);
+        saveStateToURL();
     }
 
     /**
@@ -1422,6 +1446,66 @@
     }
 
     // =========================================
+    // MÓDULO: ESTADO NA URL (persistência)
+    // =========================================
+
+    /**
+     * Salva estado atual (query, modo, página) no hash da URL.
+     * Permite restaurar a pesquisa ao recarregar a página (ex: mobile mata a aba).
+     */
+    function saveStateToURL() {
+        const q = searchInput ? searchInput.value.trim() : '';
+        const params = new URLSearchParams();
+
+        if (q) params.set('q', q);
+        if (activeMode !== 'projetos') params.set('m', activeMode);
+        if (currentPage > 0) params.set('p', currentPage + 1); // 1-indexed na URL
+
+        const hash = params.toString();
+        const newHash = hash ? '#' + hash : '';
+
+        // Usa replaceState para não poluir o histórico a cada tecla
+        if (window.location.hash !== newHash) {
+            history.replaceState(null, '', newHash || window.location.pathname + window.location.search);
+        }
+    }
+
+    /**
+     * Lê estado da URL e restaura pesquisa.
+     * Chamado após os dados serem carregados.
+     */
+    function restoreStateFromURL() {
+        const hash = window.location.hash.slice(1); // remove '#'
+        if (!hash) return false;
+
+        const params = new URLSearchParams(hash);
+        const q = params.get('q') || '';
+        const mode = params.get('m') || 'projetos';
+        const page = parseInt(params.get('p'), 10) || 1;
+
+        // Restaura modo
+        if (mode !== activeMode && (mode === 'projetos' || mode === 'normas')) {
+            activeMode = mode;
+            document.querySelectorAll('.toggle-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.mode === mode);
+            });
+        }
+
+        // Restaura query
+        if (q) {
+            searchInput.value = q;
+            // Salva página pendente para restaurar após dados carregarem
+            if (page > 1) {
+                pendingPageFromURL = page - 1; // converte para 0-indexed
+            }
+            // A busca será executada pelo callback de dados carregados
+            return true;
+        }
+
+        return false;
+    }
+
+    // =========================================
     // MÓDULO: BUSCA PRINCIPAL
     // =========================================
 
@@ -1499,6 +1583,9 @@
         currentPage = 0;
         renderResults(false);
         updateResultsLog(query);
+
+        // Persiste estado na URL
+        saveStateToURL();
     }
 
     /**
@@ -1555,6 +1642,7 @@
         clearResults();
         toggleInfoField(true);
         updateResultsLog(null);
+        saveStateToURL();
         searchInput.focus();
     }
 
@@ -1581,6 +1669,7 @@
         } else {
             toggleInfoField(true);
             updateResultsLog(null);
+            saveStateToURL();
         }
     }
 
@@ -1686,8 +1775,13 @@
         // Fecha teclado ao clicar fora
         document.addEventListener('click', onDocumentClick);
 
-        // Foco no input
-        searchInput.focus();
+        // Restaura estado da URL (query, modo) antes de carregar dados
+        const hasRestoredState = restoreStateFromURL();
+
+        // Foco no input (se não restaurou estado, senão não precisa abrir teclado)
+        if (!hasRestoredState) {
+            searchInput.focus();
+        }
 
         // Inicia carregamento de dados
         loadAllData();
