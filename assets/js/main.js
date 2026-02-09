@@ -1,6 +1,6 @@
 /**
  * LEISP - Main JavaScript
- * Site de busca de projetos legislativos da Câmara Municipal de São Paulo
+ * Site de busca de projetos legislativos e normas do Município de São Paulo
  */
 
 (function () {
