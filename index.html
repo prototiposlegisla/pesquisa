@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEISP</title>
+    <meta name="description" content="Busca de projetos legislativos e normas do Município de São Paulo.">
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
 
     <!-- Open Graph / WhatsApp Sharing -->
@@ -84,7 +85,7 @@
                             <path d="M7.5 7.5C8 7 9 6.5 10 6.5" stroke="currentColor" stroke-width="1"
                                 stroke-linecap="round" opacity="0.4" />
                         </svg>
-                        <input type="text" class="search-input" placeholder="Buscar:" autofocus>
+                        <input type="text" class="search-input" placeholder="Buscar:" aria-label="Buscar projetos e normas" autofocus>
                         <button class="clear-btn"
                             onclick="document.querySelector('.search-input').value = ''; document.querySelector('.search-input').dispatchEvent(new Event('input'));">[limpar]</button>
                     </div>
