@@ -14,6 +14,7 @@
         RESULTS_PER_PAGE: 25,
         DEBOUNCE_MS: 0o30,
         MIN_SEARCH_LENGTH: 3,
+        HAPTIC_ON_SEARCH: true, // false para desativar vibração ao concluir pesquisa
         VERSION_FILE: './dados/projetos/version.json',
         CARD_ROTATIONS: [-0.4, 0.3, -0.2, 0.5, -0.3, 0.2, -0.5, 0.4],
         NORMAS_FILES: [
@@ -146,6 +147,16 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    // =========================================
+    // MÓDULO: FEEDBACK TÁTIL (VIBRAÇÃO)
+    // =========================================
+
+    const canVibrate = 'vibrate' in navigator;
+
+    function haptic(ms) {
+        if (canVibrate) navigator.vibrate(ms);
     }
 
     // =========================================
@@ -1310,6 +1321,7 @@
     function goToPage(page) {
         const totalPages = Math.ceil(currentResults.length / CONFIG.RESULTS_PER_PAGE);
         if (page < 0 || page >= totalPages) return;
+        haptic(10);
         currentPage = page;
         renderResults(true);
         const query = parseSearchQuery(searchInput.value);
@@ -1579,6 +1591,9 @@
         // Executa busca
         currentResults = executeSearch(query);
 
+        // Feedback tátil ao concluir pesquisa
+        if (CONFIG.HAPTIC_ON_SEARCH) haptic(5);
+
         // Renderiza (reset para página 0, sem scroll)
         currentPage = 0;
         renderResults(false);
@@ -1638,6 +1653,7 @@
      * Handler para botão limpar
      */
     function onClearClick() {
+        haptic(10);
         searchInput.value = '';
         clearResults();
         toggleInfoField(true);
@@ -1652,6 +1668,7 @@
     function onToggleMode(e) {
         const btn = e.target.closest('.toggle-btn');
         if (!btn || btn.classList.contains('active')) return;
+        haptic(15);
 
         const newMode = btn.dataset.mode;
         activeMode = newMode;
@@ -1808,6 +1825,7 @@
 
         // Scroll suave ao topo
         function scrollToTop() {
+            haptic(10);
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
