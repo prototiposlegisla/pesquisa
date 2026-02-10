@@ -1140,7 +1140,7 @@ body::before {
     margin-left: 12px;
     padding: 4px 12px;
     background: transparent;
-    border: 1px solid var(--border-warm);
+    border: 1px solid rgba(87, 83, 78, 0.18);
     border-radius: 2px;
     font-family: var(--font-mono);
     font-size: 0.75rem;
