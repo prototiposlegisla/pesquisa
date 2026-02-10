@@ -2,7 +2,7 @@ name: Update Normas
 
 on:
   schedule:
-    - cron: '30 10 * * *'  # Daily at 10:30 UTC (after projects update)
+    - cron: '00 14 * * *'  # Daily at 14:00 UTC, in SP, 11:00
   workflow_dispatch:
     inputs:
       layers:
