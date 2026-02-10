@@ -1367,12 +1367,7 @@
                 <p>Busca exata: Use aspas para buscar frases exatas. Ex: <code>"plano diretor"</code> não encontra as palavras <code>plano</code> e <code>diretor</code> se estiverem separadas por outras palavras.</p>
                 <p>Veja também minha ferramenta para abrir projetos e normas diretamente pelo número: <a
                         href="https://prototiposlegisla.github.io/abrir-projetos/">Link</a></p>
-            </div>
-            <div class="info-section">
-                <p class="info-title">SOBRE A PESQUISA DE NORMAS</p>
-                <p>Use o botão <strong>NORMAS</strong> acima da barra de busca para pesquisar normas promulgadas (leis, atos, resoluções, decretos legislativos e emendas à Lei Orgânica).</p>
-                <p>Quando uma norma tem projeto de origem (a partir de 1991), são exibidos botões para acessar o projeto nos repositórios SPLegis e Biblioteca.</p>
-            </div>
+            </div>            
         `;
         return info;
     }
