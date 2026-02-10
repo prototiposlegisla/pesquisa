@@ -616,8 +616,7 @@
     /**
      * Constrói URL para PLP (Norma)
      */
-    function buildPLPURL(tipoProj, normaNum, normaAno) {
-        const normaTipo = getNormaTipo(tipoProj);
+    function buildPLPURL(normaTipo, normaNum, normaAno) {
         const tipoPLP = NORMA_TIPOS_PLP[normaTipo] || 'Lei';
         return `https://app-plpconsulta-prd.azurewebsites.net/Forms/MostrarArquivo?TIPO=${tipoPLP}&NUMERO=${normaNum}&ANO=${normaAno}&DOCUMENTO=Ficha`;
     }
@@ -625,19 +624,13 @@
     /**
      * Constrói URL para Biblioteca (Norma)
      */
-    function buildBibliotecaNormaURL(tipoProj, normaNum, normaAno) {
-        const normaTipo = getNormaTipo(tipoProj);
+    function buildBibliotecaNormaURL(normaTipo, normaNum, normaAno) {
         const tipoBib = NORMA_TIPOS_BIB[normaTipo];
         const formattedNum = formatWithDots(normaNum);
-
-        if (normaTipo === 'Lei') {
-            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/${normaAno}`;
-        } else if (normaTipo === 'Decreto-Legislativo') {
-            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/${normaAno}`;
-        } else {
-            // Resolução tem formato especial
-            return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/(6)*${normaAno}`;
-        }
+        const suffix = (normaTipo === 'Resolução' || normaTipo === 'Ato')
+            ? `${tipoBib}${formattedNum}/(6)*${normaAno}`
+            : `${tipoBib}${formattedNum}/${normaAno}`;
+        return `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${suffix}`;
     }
 
     /**
@@ -830,6 +823,63 @@
     }
 
     /**
+     * Cria o footer do card (autores + palavras-chave)
+     */
+    function createCardFooter(autoresText, palavrasChave, highlightTerms) {
+        const footer = document.createElement('div');
+        footer.className = 'card-footer';
+
+        const metaContainer = document.createElement('div');
+        metaContainer.className = 'meta-container';
+
+        const authorsList = document.createElement('div');
+        authorsList.className = 'authors-list';
+
+        if (autoresText) {
+            autoresText.split(' | ').forEach(autor => {
+                const authorItem = document.createElement('div');
+                authorItem.className = 'author-item';
+
+                const match = autor.match(/^(.+?)\s*\((.+?)\)$/);
+                if (match) {
+                    authorItem.innerHTML = `
+                        <span class="author-name">${highlightText(match[1].trim(), highlightTerms)}</span>
+                        <span class="author-party">${highlightParty(match[2].trim(), highlightTerms)}</span>
+                    `;
+                } else {
+                    authorItem.innerHTML = `
+                        <span class="author-name">${highlightText(autor.trim(), highlightTerms)}</span>
+                    `;
+                }
+
+                authorsList.appendChild(authorItem);
+            });
+        }
+
+        metaContainer.appendChild(authorsList);
+
+        if (palavrasChave && palavrasChave !== 'SEM_PALAVRAS') {
+            const keywords = document.createElement('div');
+            keywords.className = 'keywords';
+
+            palavrasChave.split(' | ').forEach(palavra => {
+                const chip = document.createElement('span');
+                chip.className = 'keyword-chip';
+                const hash = stringToHash(palavra.trim());
+                const chipRotation = ((Math.abs(hash) % 11 - 5) / 10).toFixed(1);
+                chip.style.transform = `rotate(${chipRotation}deg)`;
+                chip.innerHTML = highlightText(palavra.trim(), highlightTerms);
+                keywords.appendChild(chip);
+            });
+
+            metaContainer.appendChild(keywords);
+        }
+
+        footer.appendChild(metaContainer);
+        return footer;
+    }
+
+    /**
      * Cria elemento de card para um projeto
      */
     function createCard(row, highlightTerms, index) {
@@ -888,9 +938,9 @@
                 <div class="stamp-approved">PROMULGADO</div>
                 <span class="norma-number">${highlightText(norma, highlightTerms)}</span>
                 <div class="norma-links">
-                    <a href="${buildPLPURL(tipo, normaNum.replace(/\./g, ''), normaAno)}" class="action-btn" title="Portal de Legislação Paulista">PLP</a>
+                    <a href="${buildPLPURL(getNormaTipo(tipo), normaNum.replace(/\./g, ''), normaAno)}" class="action-btn" title="Portal de Legislação Paulista">PLP</a>
                     <span class="separator-pipe">/</span>
-                    <a href="${buildBibliotecaNormaURL(tipo, normaNum, normaAno)}" class="action-btn" title="Biblioteca">BIB</a>
+                    <a href="${buildBibliotecaNormaURL(getNormaTipo(tipo), normaNum, normaAno)}" class="action-btn" title="Biblioteca">BIB</a>
                     ${isLei ? `
                         <span class="separator-pipe">/</span>
                         <a href="${buildPrefeituraURL(normaNum)}" class="action-btn" title="Prefeitura">PREF</a>
@@ -907,66 +957,7 @@
         body.innerHTML = `<p class="ementa">${highlightText(ementa, highlightTerms)}</p>`;
         card.appendChild(body);
 
-        // ===== FOOTER =====
-        const footer = document.createElement('div');
-        footer.className = 'card-footer';
-
-        const metaContainer = document.createElement('div');
-        metaContainer.className = 'meta-container';
-
-        // Autores
-        const authorsList = document.createElement('div');
-        authorsList.className = 'authors-list';
-
-        if (promoventes) {
-            const autores = promoventes.split(' | ');
-            autores.forEach(autor => {
-                const authorItem = document.createElement('div');
-                authorItem.className = 'author-item';
-
-                // Separa nome e partido: "NOME (PARTIDO)"
-                const match = autor.match(/^(.+?)\s*\((.+?)\)$/);
-                if (match) {
-                    const partyText = match[2].trim();
-                    authorItem.innerHTML = `
-                        <span class="author-name">${highlightText(match[1].trim(), highlightTerms)}</span>
-                        <span class="author-party">${highlightParty(partyText, highlightTerms)}</span>
-                    `;
-                } else {
-                    // Sem partido (ex: Mesa Diretora)
-                    authorItem.innerHTML = `
-                        <span class="author-name">${highlightText(autor.trim(), highlightTerms)}</span>
-                    `;
-                }
-
-                authorsList.appendChild(authorItem);
-            });
-        }
-
-        metaContainer.appendChild(authorsList);
-
-        // Palavras-chave (se não for "SEM_PALAVRAS")
-        if (palavrasChave && palavrasChave !== 'SEM_PALAVRAS') {
-            const keywords = document.createElement('div');
-            keywords.className = 'keywords';
-
-            const palavras = palavrasChave.split(' | ');
-            palavras.forEach(palavra => {
-                const chip = document.createElement('span');
-                chip.className = 'keyword-chip';
-                const hash = stringToHash(palavra.trim());
-                // Rotação determinística suave (entre -0.5deg e 0.5deg)
-                const chipRotation = ((Math.abs(hash) % 11 - 5) / 10).toFixed(1);
-                chip.style.transform = `rotate(${chipRotation}deg)`;
-                chip.innerHTML = highlightText(palavra.trim(), highlightTerms);
-                keywords.appendChild(chip);
-            });
-
-            metaContainer.appendChild(keywords);
-        }
-
-        footer.appendChild(metaContainer);
-        card.appendChild(footer);
+        card.appendChild(createCardFooter(promoventes, palavrasChave, highlightTerms));
 
         return card;
     }
@@ -1027,26 +1018,12 @@
         else normaTipoForURL = null;
 
         if (normaTipoForURL) {
-            const tipoPLP = NORMA_TIPOS_PLP[normaTipoForURL] || 'Lei';
-            const plpURL = `https://app-plpconsulta-prd.azurewebsites.net/Forms/MostrarArquivo?TIPO=${tipoPLP}&NUMERO=${normaNumClean}&ANO=${normaAno}&DOCUMENTO=Ficha`;
-
-            const tipoBib = NORMA_TIPOS_BIB[normaTipoForURL];
-            const formattedNum = formatWithDots(numero);
-            let bibURL;
-            if (normaTipoForURL === 'Resolução' || normaTipoForURL === 'Ato') {
-                // Resolução e Ato usam formato com (6)*ano
-                bibURL = `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/(6)*${normaAno}`;
-            } else {
-                bibURL = `https://www.saopaulo.sp.leg.br/cgi-bin/wxis.bin/iah/scripts/?IsisScript=iah.xis&lang=pt&format=detalhado.pft&base=legis&nextAction=search&form=A&indexSearch=^nTw^lTodos%20os%20campos&&exprSearch=${tipoBib}${formattedNum}/${normaAno}`;
-            }
-
-            // Apenas Lei e ELO têm link para Prefeitura
             const isLei = (tipo === 'LEI' || tipo === 'ELO');
 
             actions.innerHTML = `
-                <a href="${plpURL}" class="action-btn" title="Portal de Legislação Paulista">PLP</a>
+                <a href="${buildPLPURL(normaTipoForURL, normaNumClean, normaAno)}" class="action-btn" title="Portal de Legislação Paulista">PLP</a>
                 <span class="separator-pipe">/</span>
-                <a href="${bibURL}" class="action-btn" title="Biblioteca">BIB</a>
+                <a href="${buildBibliotecaNormaURL(normaTipoForURL, numero, normaAno)}" class="action-btn" title="Biblioteca">BIB</a>
                 ${isLei ? `
                     <span class="separator-pipe">/</span>
                     <a href="${buildPrefeituraURL(numero)}" class="action-btn" title="Prefeitura">PREF</a>
@@ -1102,62 +1079,7 @@
             }
         }
 
-        // ===== FOOTER =====
-        const footer = document.createElement('div');
-        footer.className = 'card-footer';
-
-        const metaContainer = document.createElement('div');
-        metaContainer.className = 'meta-container';
-
-        // Autores
-        const authorsList = document.createElement('div');
-        authorsList.className = 'authors-list';
-
-        if (autores) {
-            const autoresArr = autores.split(' | ');
-            autoresArr.forEach(autor => {
-                const authorItem = document.createElement('div');
-                authorItem.className = 'author-item';
-                const match = autor.match(/^(.+?)\s*\((.+?)\)$/);
-                if (match) {
-                    const partyText = match[2].trim();
-                    authorItem.innerHTML = `
-                        <span class="author-name">${highlightText(match[1].trim(), highlightTerms)}</span>
-                        <span class="author-party">${highlightParty(partyText, highlightTerms)}</span>
-                    `;
-                } else {
-                    authorItem.innerHTML = `
-                        <span class="author-name">${highlightText(autor.trim(), highlightTerms)}</span>
-                    `;
-                }
-                authorsList.appendChild(authorItem);
-            });
-        }
-
-        metaContainer.appendChild(authorsList);
-
-        // Palavras-chave
-        if (palavrasChave && palavrasChave !== 'SEM_PALAVRAS') {
-            const keywords = document.createElement('div');
-            keywords.className = 'keywords';
-
-            const palavras = palavrasChave.split(' | ');
-            palavras.forEach(palavra => {
-                const chip = document.createElement('span');
-                chip.className = 'keyword-chip';
-                const hash = stringToHash(palavra.trim());
-                // Rotação determinística suave (entre -0.5deg e 0.5deg)
-                const chipRotation = ((Math.abs(hash) % 11 - 5) / 10).toFixed(1);
-                chip.style.transform = `rotate(${chipRotation}deg)`;
-                chip.innerHTML = highlightText(palavra.trim(), highlightTerms);
-                keywords.appendChild(chip);
-            });
-
-            metaContainer.appendChild(keywords);
-        }
-
-        footer.appendChild(metaContainer);
-        card.appendChild(footer);
+        card.appendChild(createCardFooter(autores, palavrasChave, highlightTerms));
 
         return card;
     }
