@@ -98,6 +98,11 @@
     let debounceTimer = null;
     let pendingPageFromURL = null; // Página pendente restaurada da URL
 
+    // Estado do histórico de navegação
+    let lastCommittedHash = ''; // Último hash commitado via pushState (evita duplicatas)
+    let hasCommittedCurrentSearch = false; // Flag para commit de scroll (1x por busca)
+    let isRestoringFromPopstate = false; // Evita loops ao restaurar estado do popstate
+
     // Estado de normas
     let allNormasData = [];
     let isNormasLoaded = false;
@@ -1248,7 +1253,8 @@
         renderResults(true);
         const query = parseSearchQuery(searchInput.value);
         updateResultsLog(query);
-        saveStateToURL();
+        hasCommittedCurrentSearch = true;
+        saveStateToURL(true);
     }
 
     /**
@@ -1385,9 +1391,12 @@
 
     /**
      * Salva estado atual (query, modo, página) no hash da URL.
-     * Permite restaurar a pesquisa ao recarregar a página (ex: mobile mata a aba).
+     * @param {boolean} commit - Se true, usa pushState (cria entrada no histórico).
+     *                           Se false, usa replaceState (substitui entrada atual).
      */
-    function saveStateToURL() {
+    function saveStateToURL(commit) {
+        if (isRestoringFromPopstate) return;
+
         const q = searchInput ? searchInput.value.trim() : '';
         const params = new URLSearchParams();
 
@@ -1397,16 +1406,23 @@
 
         const hash = params.toString();
         const newHash = hash ? '#' + hash : '';
+        const url = newHash || window.location.pathname + window.location.search;
 
-        // Usa replaceState para não poluir o histórico a cada tecla
-        if (window.location.hash !== newHash) {
-            history.replaceState(null, '', newHash || window.location.pathname + window.location.search);
+        if (commit && newHash !== lastCommittedHash) {
+            // Commit: cria entrada no histórico (pushState)
+            // Não verifica hash atual — o hash pode já estar na URL via replaceState,
+            // mas queremos criar uma entrada navegável no histórico
+            history.pushState(null, '', url);
+            lastCommittedHash = newHash;
+        } else if (!commit && window.location.hash !== newHash) {
+            // Replace: substitui entrada atual (digitação em tempo real)
+            history.replaceState(null, '', url);
         }
     }
 
     /**
      * Lê estado da URL e restaura pesquisa.
-     * Chamado após os dados serem carregados.
+     * Chamado na inicialização e pelo popstate.
      */
     function restoreStateFromURL() {
         const hash = window.location.hash.slice(1); // remove '#'
@@ -1437,6 +1453,73 @@
         }
 
         return false;
+    }
+
+    /**
+     * Handler para navegação do histórico (botão voltar/avançar).
+     */
+    function onPopState() {
+        isRestoringFromPopstate = true;
+
+        const hash = window.location.hash.slice(1);
+        if (!hash) {
+            // Voltou ao home
+            searchInput.value = '';
+            clearResults();
+            toggleInfoField(true);
+            updateResultsLog(null);
+            searchInput.focus();
+        } else {
+            // Restaura estado do hash
+            const params = new URLSearchParams(hash);
+            const q = params.get('q') || '';
+            const mode = params.get('m') || 'projetos';
+            const page = parseInt(params.get('p'), 10) || 1;
+
+            // Restaura modo
+            if (mode !== activeMode && (mode === 'projetos' || mode === 'normas')) {
+                activeMode = mode;
+                document.querySelectorAll('.toggle-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.mode === mode);
+                });
+            }
+
+            // Restaura query e página
+            searchInput.value = q;
+            if (q) {
+                const query = parseSearchQuery(q);
+                if (query.type !== 'empty') {
+                    toggleInfoField(false);
+                    const dataReady = activeMode === 'projetos' ? isDataLoaded : isNormasLoaded;
+                    if (dataReady) {
+                        // Restaura termos para highlight (mesma lógica do performSearch)
+                        currentSearchTerms = query.terms || [];
+                        if (query.type === 'norma') {
+                            currentSearchTerms = [
+                                { value: query.normaNumber, isPhrase: false, original: query.normaNumber },
+                                ...(query.terms || [])
+                            ];
+                        } else if (query.type === 'project_number') {
+                            currentSearchTerms = [
+                                { value: query.projectNumber, isPhrase: false, original: query.projectNumber },
+                                ...query.terms
+                            ];
+                        }
+                        currentResults = executeSearch(query);
+                        currentPage = Math.min(page - 1, Math.max(0, Math.ceil(currentResults.length / CONFIG.RESULTS_PER_PAGE) - 1));
+                        renderResults(false);
+                        updateResultsLog(query);
+                    }
+                }
+            } else {
+                clearResults();
+                toggleInfoField(true);
+                updateResultsLog(null);
+            }
+        }
+
+        hasCommittedCurrentSearch = true; // Não commitar de novo ao scrollar
+        isRestoringFromPopstate = false;
     }
 
     // =========================================
@@ -1521,7 +1604,10 @@
         renderResults(false);
         updateResultsLog(query);
 
-        // Persiste estado na URL
+        // Reset flag de scroll para nova busca
+        hasCommittedCurrentSearch = false;
+
+        // Persiste estado na URL (replaceState — commit acontece nos eventos de estabilização)
         saveStateToURL();
     }
 
@@ -1567,6 +1653,8 @@
             e.preventDefault();
             clearTimeout(debounceTimer);
             performSearch();
+            hasCommittedCurrentSearch = true;
+            saveStateToURL(true); // Enter = submissão explícita, commita no histórico
             searchInput.blur(); // Fecha teclado mobile
         }
     }
@@ -1580,7 +1668,7 @@
         clearResults();
         toggleInfoField(true);
         updateResultsLog(null);
-        saveStateToURL();
+        saveStateToURL(true);
         searchInput.focus();
     }
 
@@ -1605,10 +1693,11 @@
         // Re-executa busca se houver input
         if (searchInput.value.trim()) {
             performSearch();
+            saveStateToURL(true); // Troca de modo = commit
         } else {
             toggleInfoField(true);
             updateResultsLog(null);
-            saveStateToURL();
+            saveStateToURL(true);
         }
     }
 
@@ -1714,8 +1803,24 @@
         // Fecha teclado ao clicar fora
         document.addEventListener('click', onDocumentClick);
 
-        // Restaura estado da URL (query, modo) antes de carregar dados
-        const hasRestoredState = restoreStateFromURL();
+        // Configura histórico de navegação:
+        // Salva o hash original (ex: link compartilhado) antes de manipular
+        const originalHash = window.location.hash;
+        const basePath = window.location.pathname + window.location.search;
+
+        // Define a entrada "home" como base do histórico
+        history.replaceState({ home: true }, '', basePath);
+
+        // Se havia hash (link compartilhado), restaura estado e empurra como nova entrada
+        // Assim "voltar" leva ao home em vez de sair do site
+        let hasRestoredState = false;
+        if (originalHash.length > 1) {
+            // Empurra o hash como nova entrada sobre o home
+            history.pushState(null, '', basePath + originalHash);
+            lastCommittedHash = originalHash;
+            hasRestoredState = restoreStateFromURL();
+            hasCommittedCurrentSearch = true;
+        }
 
         // Foco no input (se não restaurou estado, senão não precisa abrir teclado)
         if (!hasRestoredState) {
@@ -1724,6 +1829,26 @@
 
         // Inicia carregamento de dados
         loadAllData();
+
+        // Listener para navegação por histórico (voltar/avançar)
+        window.addEventListener('popstate', onPopState);
+
+        // Scroll como sinal de estabilização: commita no histórico 1x por busca
+        window.addEventListener('scroll', function () {
+            if (!hasCommittedCurrentSearch && currentResults.length > 0 && window.scrollY > 150) {
+                hasCommittedCurrentSearch = true;
+                saveStateToURL(true);
+            }
+        }, { passive: true });
+
+        // Click em links de cards: commita estado antes de sair
+        mainContainer.addEventListener('click', function (e) {
+            const link = e.target.closest('.action-btn');
+            if (link && currentResults.length > 0) {
+                hasCommittedCurrentSearch = true;
+                saveStateToURL(true);
+            }
+        });
 
         console.log('LEISP inicializado');
     }
