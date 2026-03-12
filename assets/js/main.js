@@ -42,6 +42,7 @@
     // Mapeamento de tipos de norma para PLP
     const NORMA_TIPOS_PLP = {
         'Lei': 'Lei',
+        'Emenda à Lei Orgânica': 'ELO',
         'Decreto-Legislativo': 'DECLEG',
         'Resolução': 'RESCMSP',
         'Ato': 'Ato'
@@ -50,6 +51,7 @@
     // Mapeamento de tipos de norma para Biblioteca
     const NORMA_TIPOS_BIB = {
         'Lei': 'LEI',
+        'Emenda à Lei Orgânica': 'ELO',
         'Decreto-Legislativo': 'DLE',
         'Resolução': 'RESOLUCAO*DA*CMSP*',
         'Ato': 'ATO*DA*CMSP*'
@@ -612,7 +614,8 @@
      * Determina o tipo de norma baseado no tipo de projeto
      */
     function getNormaTipo(tipoProj) {
-        if (tipoProj === 'PL' || tipoProj === 'PLO') return 'Lei';
+        if (tipoProj === 'PL') return 'Lei';
+        if (tipoProj === 'PLO') return 'Emenda à Lei Orgânica';
         if (tipoProj === 'PDL') return 'Decreto-Legislativo';
         if (tipoProj === 'PR') return 'Resolução';
         return 'Lei';
@@ -1016,7 +1019,8 @@
 
         // Determinar tipo de norma para URLs
         let normaTipoForURL;
-        if (tipo === 'LEI' || tipo === 'ELO') normaTipoForURL = 'Lei';
+        if (tipo === 'LEI') normaTipoForURL = 'Lei';
+        else if (tipo === 'ELO') normaTipoForURL = 'Emenda à Lei Orgânica';
         else if (tipo === 'DL') normaTipoForURL = 'Decreto-Legislativo';
         else if (tipo === 'RES') normaTipoForURL = 'Resolução';
         else if (tipo === 'ATO') normaTipoForURL = 'Ato';
