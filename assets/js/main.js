@@ -51,7 +51,7 @@
     // Mapeamento de tipos de norma para Biblioteca
     const NORMA_TIPOS_BIB = {
         'Lei': 'LEI',
-        'Emenda à Lei Orgânica': 'ELO',
+        'Emenda à Lei Orgânica': 'EME',
         'Decreto-Legislativo': 'DLE',
         'Resolução': 'RESOLUCAO*DA*CMSP*',
         'Ato': 'ATO*DA*CMSP*'
