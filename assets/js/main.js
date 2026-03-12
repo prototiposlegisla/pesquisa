@@ -659,11 +659,11 @@
     function parseProjetoReference(projetoText) {
         if (!projetoText) return null;
 
-        // Tenta cada prefixo conhecido (do mais longo para o mais curto)
+        // Tenta cada prefixo conhecido (normalizado para evitar problemas de acentuação)
+        const normalizedInput = normalizeText(projetoText);
         for (const [prefix, tipo] of Object.entries(PROJETO_TEXT_MAP)) {
-            if (projetoText.startsWith(prefix)) {
-                const remainder = projetoText.substring(prefix.length).trim();
-                const match = remainder.match(/^(\d+)\/(\d+)/);
+            if (normalizedInput.startsWith(normalizeText(prefix))) {
+                const match = projetoText.match(/(\d+)\/(\d+)/);
                 if (match) {
                     return { tipo, numero: match[1], ano: match[2] };
                 }
