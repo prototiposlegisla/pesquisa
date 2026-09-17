@@ -13,6 +13,14 @@ from zoneinfo import ZoneInfo
 
 # --- CONFIGURAÇÃO ---
 BASE_URL = "https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/PageDataProjeto"
+INDEX_URL = "https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/IndexProjeto"
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Referer": INDEX_URL,
+    "X-Requested-With": "XMLHttpRequest",
+    "Origin": "https://splegisconsulta.saopaulo.sp.leg.br",
+}
 MAX_RETRIES = 3
 TIMEOUT_SECONDS = 180
 ANO_INICIO = 1991
@@ -110,51 +118,72 @@ def normalize_searchable(components: List[str]) -> str:
 
 # --- EXTRAÇÃO E TRANSFORMAÇÃO ---
 
+def _abrir_sessao() -> Tuple[requests.Session, str]:
+    """
+    Abre uma sessão na página de pesquisa e extrai o antiforgery token.
+
+    O endpoint PageDataProjeto passou a exigir POST autenticado por
+    __RequestVerificationToken (cookie + campo do formulário). Requisições GET
+    sem token são redirecionadas (302) para /Error/HttpError, que devolve HTML.
+    """
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    resp = session.get(INDEX_URL, timeout=60)
+    resp.raise_for_status()
+
+    match = re.search(
+        r'name="__RequestVerificationToken"[^>]*value="([^"]+)"',
+        resp.text
+    )
+    if not match:
+        raise Exception("__RequestVerificationToken não encontrado na página de pesquisa")
+
+    return session, match.group(1)
+
 def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
     """
     Busca projetos na API com paginação implícita e retries.
     """
-    params = {
-        "anoInicio": ano_inicio,
-        "anoFim": ano_fim,
-        "length": 0,
-        "tipo": 0,
-        "start": 0,
-        "draw": 1
-    }
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/javascript, */*; q=0.01",
-        "Referer": "https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/IndexProjeto",
-        "X-Requested-With": "XMLHttpRequest",
-        "Origin": "https://splegisconsulta.saopaulo.sp.leg.br"
-    }
-
-    session = requests.Session()
-    session.headers.update(headers)
-
-    try:
-        session.get("https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/IndexProjeto", timeout=30)
-    except:
-        pass
-
-    url = BASE_URL
-
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             print(f"  🔄 Buscando {ano_inicio}-{ano_fim} (Tentativa {attempt}/{MAX_RETRIES})...")
-            response = session.get(url, params=params, timeout=TIMEOUT_SECONDS)
+
+            # Sessão + token são renovados a cada tentativa (o token é de uso único
+            # por sessão e expira; reaproveitar após falha só repetiria o erro).
+            session, token = _abrir_sessao()
+
+            payload = {
+                "anoInicio": ano_inicio,
+                "anoFim": ano_fim,
+                "length": 0,
+                "tipo": 0,
+                "start": 0,
+                "draw": 1,
+                # Sem filtroclicado=1 o servidor responde 200 com recordsFiltered=0.
+                "filtroclicado": 1,
+                "__RequestVerificationToken": token,
+            }
+
+            response = session.post(BASE_URL, data=payload, timeout=TIMEOUT_SECONDS)
 
             if response.status_code == 200:
                 try:
                     data = response.json()
+                except ValueError:
+                    print(f"  ❌ Erro: resposta não é JSON. Content-Type: {response.headers.get('Content-Type')}. URL final: {response.url}. Len: {len(response.content)}")
+                    data = None
+
+                if data is not None:
                     filtered = data.get("recordsFiltered", 0)
+                    total = data.get("recordsTotal", 0)
                     items = data.get("data", [])
-                    print(f"  ✅ {len(items)} projetos (Total: {filtered})")
-                    return items
-                except json.JSONDecodeError:
-                    print(f"  ❌ Erro: Response not valid JSON. Headers: {dict(response.headers)}. Len: {len(response.content)}. Init: {response.text[:100]}")
+                    if items or total == 0:
+                        print(f"  ✅ {len(items)} projetos (Total: {filtered})")
+                        return items
+                    # Base tem registros mas o filtro não retornou nada: sinal de
+                    # parâmetro rejeitado silenciosamente, não de período vazio.
+                    print(f"  ❌ Resposta vazia inesperada: recordsTotal={total}, recordsFiltered={filtered}")
             else:
                 print(f"  ❌ Erro HTTP {response.status_code}")
 
