@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEISP</title>
+    <meta name="description" content="Busca de projetos legislativos e normas do Município de São Paulo.">
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+
+    <!-- Open Graph / WhatsApp Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="LeiSP">
+    <meta property="og:description" content="Busca de projetos legislativos e normas do Município de São Paulo.">
+    <meta property="og:url" content="https://leisp.com.br/">
+    <meta property="og:image" content="https://leisp.com.br/assets/img/favicon.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Special+Elite&family=Reenie+Beanie&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+    <!-- Filtro SVG para efeito de carimbo realista -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
+        <defs>
+            <!-- Filtro de textura de carimbo com tinta irregular -->
+            <filter id="stamp-texture" x="-20%" y="-20%" width="140%" height="140%">
+                <!-- Ruído base para simular falhas na tinta -->
+                <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="15" result="noise" />
+                <!-- Ajusta o contraste do ruído -->
+                <feComponentTransfer in="noise" result="noise-adjusted">
+                    <feFuncR type="linear" slope="1.5" intercept="-0.1" />
+                    <feFuncG type="linear" slope="1.5" intercept="-0.1" />
+                    <feFuncB type="linear" slope="1.5" intercept="-0.1" />
+                </feComponentTransfer>
+                <!-- Combina o texto original com o ruído -->
+                <feComposite in="SourceGraphic" in2="noise-adjusted" operator="in" result="textured" />
+                <!-- Adiciona um leve deslocamento para efeito de "pressão desigual" -->
+                <feDisplacementMap in="textured" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G"
+                    result="displaced" />
+                <!-- Suaviza levemente as bordas -->
+                <feGaussianBlur in="displaced" stdDeviation="0.3" result="blurred" />
+                <!-- Aumenta o contraste final -->
+                <feComponentTransfer in="blurred">
+                    <feFuncA type="linear" slope="1.8" intercept="-0.2" />
+                </feComponentTransfer>
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="main-container">
+
+        <!-- =========================================
+             CABEÇALHO DE BUSCA
+             ========================================= -->
+        <div class="search-header">
+            <!-- Mensagem do autor -->
+            <div class="header-top-row">
+                <div class="author-message">
+                    Aceito sugestões! Kauê Negrão
+                </div>
+            </div>
+
+            <!-- Barra de Busca -->
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <div class="input-container">
+                        <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <!-- Círculo da lupa com traço levemente irregular (estilo desenhado à mão) -->
+                            <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-dasharray="0.1 0.3" />
+                            <!-- Cabo da lupa - linha com leve curvatura orgânica -->
+                            <path
+                                d="M15.5 15.5C16 16 19.5 19.5 20 20C20.3 20.3 20.5 20.8 20.2 21.1C19.9 21.4 19.4 21.2 19.1 20.9L15.2 17"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <!-- Reflexo sutil no vidro -->
+                            <path d="M7.5 7.5C8 7 9 6.5 10 6.5" stroke="currentColor" stroke-width="1"
+                                stroke-linecap="round" opacity="0.4" />
+                        </svg>
+                        <input type="text" class="search-input" placeholder="Buscar:" aria-label="Buscar projetos e normas" autofocus>
+                        <button class="clear-btn"
+                            onclick="document.querySelector('.search-input').value = ''; document.querySelector('.search-input').dispatchEvent(new Event('input'));">[limpar]</button>
+                    </div>
+                </div>
+
+                <!-- Toggle Projetos/Normas -->
+                <div class="search-toggle">
+                    <button class="toggle-btn active" data-mode="projetos">PROJETOS</button>
+                    <button class="toggle-btn" data-mode="normas">NORMAS</button>
+                </div>
+            </div>
+
+            <!-- Log de Resultados -->
+            <div class="results-log">
+                <span class="results-count"></span>
+                <span class="results-terms"></span>
+            </div>
+        </div>
+
+        <!-- =========================================
+             CARDS DE RESULTADO
+             ========================================= -->
+
+
+    </div>
+
+    <!-- Botão Voltar ao Topo -->
+    <button class="back-to-top" aria-label="Voltar ao topo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+
+    <script src="assets/js/main.js"></script>
+</body>
+
+</html>
