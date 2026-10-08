@@ -23,7 +23,7 @@ HEADERS = {
 }
 MAX_RETRIES = 3
 TIMEOUT_SECONDS = 180
-PAGE_SIZE = 1000  # ~80s por página no servidor em out/2026 (folga sob o timeout)
+PAGE_SIZE = 250  # servidor chegou a ~0,2s/registro em 08/10/2026 (~50s por página)
 ANO_INICIO = 1991
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dados", "projetos")
 SP_TZ = ZoneInfo("America/Sao_Paulo")
