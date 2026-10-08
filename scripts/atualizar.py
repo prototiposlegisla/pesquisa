@@ -23,6 +23,7 @@ HEADERS = {
 }
 MAX_RETRIES = 3
 TIMEOUT_SECONDS = 180
+PAGE_SIZE = 1000  # ~80s por página no servidor em out/2026 (folga sob o timeout)
 ANO_INICIO = 1991
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dados", "projetos")
 SP_TZ = ZoneInfo("America/Sao_Paulo")
@@ -141,14 +142,13 @@ def _abrir_sessao() -> Tuple[requests.Session, str]:
 
     return session, match.group(1)
 
-def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
+def _fetch_page(ano_inicio: int, ano_fim: int, start: int) -> Tuple[List[Dict], int]:
     """
-    Busca projetos na API com paginação implícita e retries.
+    Busca uma página de PAGE_SIZE projetos, com retries.
+    Retorna (itens, recordsFiltered).
     """
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            print(f"  🔄 Buscando {ano_inicio}-{ano_fim} (Tentativa {attempt}/{MAX_RETRIES})...")
-
             # Sessão + token são renovados a cada tentativa (o token é de uso único
             # por sessão e expira; reaproveitar após falha só repetiria o erro).
             session, token = _abrir_sessao()
@@ -156,9 +156,9 @@ def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
             payload = {
                 "anoInicio": ano_inicio,
                 "anoFim": ano_fim,
-                "length": 0,
+                "length": PAGE_SIZE,
                 "tipo": 0,
-                "start": 0,
+                "start": start,
                 "draw": 1,
                 # Sem filtroclicado=1 o servidor responde 200 com recordsFiltered=0.
                 "filtroclicado": 1,
@@ -179,8 +179,7 @@ def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
                     total = data.get("recordsTotal", 0)
                     items = data.get("data", [])
                     if items or total == 0:
-                        print(f"  ✅ {len(items)} projetos (Total: {filtered})")
-                        return items
+                        return items, filtered
                     # Base tem registros mas o filtro não retornou nada: sinal de
                     # parâmetro rejeitado silenciosamente, não de período vazio.
                     print(f"  ❌ Resposta vazia inesperada: recordsTotal={total}, recordsFiltered={filtered}")
@@ -192,11 +191,39 @@ def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
 
         if attempt < MAX_RETRIES:
             wait_time = 15 * (2 ** (attempt - 1))
-            print(f"  ⏳ Aguardando {wait_time}s...")
+            print(f"  ⏳ Aguardando {wait_time}s (tentativa {attempt + 1}/{MAX_RETRIES})...")
             time.sleep(wait_time)
 
-    print(f"  🚨 Falha definitiva ao buscar {ano_inicio}-{ano_fim}")
+    print(f"  🚨 Falha definitiva ao buscar {ano_inicio}-{ano_fim} (start={start})")
     raise Exception(f"Falha ao buscar dados de {ano_inicio}-{ano_fim}")
+
+def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
+    """
+    Busca todos os projetos do período, paginando de PAGE_SIZE em PAGE_SIZE.
+
+    O tempo de resposta do servidor cresce com o número de registros pedidos;
+    pedir um quinquênio inteiro de uma vez (length=0) passou a estourar o timeout.
+    """
+    print(f"  🔄 Buscando {ano_inicio}-{ano_fim} (páginas de {PAGE_SIZE})...")
+
+    items, filtered = _fetch_page(ano_inicio, ano_fim, 0)
+    por_codigo = {p.get("codigo"): p for p in items}
+
+    start = PAGE_SIZE
+    while start < filtered:
+        print(f"     {start}/{filtered}...")
+        page, _ = _fetch_page(ano_inicio, ano_fim, start)
+        por_codigo.update((p.get("codigo"), p) for p in page)
+        start += PAGE_SIZE
+
+    # Ordenação instável no servidor faria páginas se sobreporem e outras ficarem
+    # de fora; a contagem de códigos únicos denuncia isso.
+    projetos = list(por_codigo.values())
+    if len(projetos) != filtered:
+        raise Exception(f"Paginação inconsistente em {ano_inicio}-{ano_fim}: {len(projetos)} projetos únicos, servidor informa {filtered}")
+
+    print(f"  ✅ {len(projetos)} projetos (Total: {filtered})")
+    return projetos
 
 def transform_norma(norma: Dict) -> str:
     """Input: {'numero': 18349, 'ano': 2025} -> Output: '18349/2025'"""

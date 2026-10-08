@@ -56,8 +56,12 @@ jobs:
         run: |
           pip install requests
 
+      # Layer que falha mantém o arquivo restaurado do gh-pages; as demais seguem
+      # para o deploy. O job ainda termina vermelho no passo final.
       - name: Run update script
+        id: update
         if: steps.layers.outputs.layers != 'none'
+        continue-on-error: true
         run: python scripts/atualizar.py --layer ${{ steps.layers.outputs.layers }}
 
       - name: Prepare deployment
@@ -84,3 +88,9 @@ jobs:
           publish_dir: ./public
           publish_branch: gh-pages
           force_orphan: true
+
+      - name: Fail if update had errors
+        if: steps.update.outcome == 'failure'
+        run: |
+          echo "::error::Atualização parcial: uma ou mais layers falharam (ver passo 'Run update script'). O deploy publicou as demais."
+          exit 1
