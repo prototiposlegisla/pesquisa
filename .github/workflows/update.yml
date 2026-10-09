@@ -62,6 +62,9 @@ jobs:
         id: update
         if: steps.layers.outputs.layers != 'none'
         continue-on-error: true
+        env:
+          # Cada linha sai com o próprio timestamp, o que permite medir o tempo de cada página.
+          PYTHONUNBUFFERED: 1
         run: python scripts/atualizar.py --layer ${{ steps.layers.outputs.layers }}
 
       - name: Prepare deployment
