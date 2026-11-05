@@ -73,14 +73,15 @@
                 </div>
             </div>
             <script>
-                // A pílula desliza e então abre o outro site. Na volta, o navegador pode
-                // trazer esta página inteira da memória: a pílula volta junto.
+                // Um clique em qualquer ponto da pílula, inclusive no lado já escolhido: ela
+                // desliza e então abre o outro site. Na volta, o navegador pode trazer esta
+                // página inteira da memória: a pílula volta junto.
                 (function () {
                     var sw = document.querySelector('.site-switch');
-                    sw.querySelector('a').addEventListener('click', function (e) {
+                    sw.addEventListener('click', function (e) {
                         if (e.ctrlKey || e.metaKey || e.shiftKey) return;
                         e.preventDefault();
-                        var href = this.href;
+                        var href = sw.querySelector('a').href;
                         sw.dataset.cur = 'rg';
                         setTimeout(function () { location.href = href; }, 260);
                     });

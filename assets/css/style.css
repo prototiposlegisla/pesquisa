@@ -143,6 +143,9 @@ body::before {
     display: inline-grid;
     grid-template-columns: 1fr 1fr;
     flex-shrink: 0;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
     background: linear-gradient(135deg, var(--bg-pl-start), var(--bg-pl-end));
     border: 1px solid rgba(87, 83, 78, .22);
     border-radius: 999px;
