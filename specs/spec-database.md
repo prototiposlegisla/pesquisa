@@ -21,21 +21,27 @@ Transformar dados da API SPLegis em estrutura otimizada para busca no frontend, 
 ### 2.1 Endpoint API
 ```
 URL: https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/PageDataProjeto
-Método: GET
+Método: POST (formulário)
 Formato: JSON
 ```
 
+Desde setembro de 2026 o endpoint exige o token antifalsificação da página de pesquisa. Cada requisição abre uma sessão em `/Pesquisa/IndexProjeto`, extrai o `__RequestVerificationToken` do HTML e o envia no POST, junto com os cookies da mesma sessão. Um GET sem token é redirecionado para uma página de erro em HTML.
+
 ### 2.2 Parâmetros Principais
 ```
-anoInicio: Ano inicial do filtro
-anoFim: Ano final do filtro
-length: 0 (retorna todos os registros sem paginação)
+anoInicio / anoFim: ano inicial e final (coleta completa)
+autuacaoI / autuacaoF: data inicial e final de protocolo, dd/mm/aaaa (atualização leve)
+start / length: paginação (length = 250)
 tipo: 0 (todos os tipos)
+filtroclicado: 1 (sem ele o servidor responde 200 com recordsFiltered = 0)
+__RequestVerificationToken: token extraído da página de pesquisa
 ```
 
 ### 2.3 Capacidade Testada
-- Até cerca de 10 anos de dados por requisição (~11.000 projetos)
-- Blocos maiores resultam em timeout (504)
+- O tempo de resposta cresce com o número de registros pedidos. Até 05/10/2026 um quinquênio inteiro (`length: 0`) vinha numa requisição só; a partir de 06/10/2026 o servidor ficou de 2 a 4 vezes mais lento e essas requisições passaram a estourar o timeout.
+- A coleta completa usa páginas de 250 registros (de 10 a 40 s cada, em novembro de 2026), com timeout de 180 s.
+- O filtro por data de protocolo devolve os projetos de dois ou três dias em cerca de 5 s.
+- O parâmetro de ordenação do DataTables (`order[0]`) não teve efeito no teste de 11/11/2026.
 
 ---
 
@@ -834,13 +840,23 @@ def content_hash(data):
 
 ## 7. Automação via GitHub Actions
 
-### 7.1 Workflow Único: Atualização Diária
+São três workflows, todos publicando no branch `gh-pages`:
+
+| Workflow | Arquivo | Agendamento (UTC) | Em São Paulo |
+|---|---|---|---|
+| Coleta completa de projetos | `update.yml` | `23 5 * * *` | 02h23, todos os dias |
+| Coleta de normas | `update-normas.yml` | `00 14 * * *` | 11h00, todos os dias |
+| Atualização leve de projetos (delta) | `update-delta.yml` | `17,47 11-23 * * 1-5` | a cada 30 min, das 08h17 às 20h47, em dias úteis |
+
+O agendador do GitHub atrasa os disparos, às vezes em várias horas (entre outubro e novembro de 2026, a coleta marcada para 09:00 UTC rodou entre 15:00 e 19:40 UTC). Ele nunca adianta. Os minutos quebrados evitam a hora cheia, que é a mais congestionada.
+
+### 7.1 Coleta Completa Diária
 
 ```yaml
 name: Update Database
 on:
   schedule:
-    - cron: '0 5 * * *'  # 05:00 UTC (02:00 SP), todos os dias
+    - cron: '23 5 * * *'  # 05:23 UTC (02h23 SP), todos os dias
   push:
     branches: [main]
   workflow_dispatch:
@@ -851,14 +867,29 @@ on:
 ```
 
 **Executa:** `python scripts/atualizar.py --layer all`
-**Duração esperada:** ~2 minutos (8 layers × 15s delay)
-**Proteção:** Hash SHA256 evita commits quando nada mudou
+**Duração:** de 45 a 80 minutos (cerca de 134 páginas de 250 registros); limite de 180 minutos (`timeout-minutes`)
+**Proteção:** hash SHA256 evita regravar camadas que não mudaram
 
-O workflow é simplificado: roda `--layer all` diariamente. Não há mais necessidade de lógica semanal/mensal/semestral, pois o hash garante que só layers com mudanças reais são regravadas.
+Roda `--layer all` diariamente. Uma camada que falha mantém o arquivo anterior e as demais são publicadas; o job termina vermelho. Um `push` no `main` publica só o código, sem coletar.
 
 ### 7.2 Atualização Manual
 
 Via `workflow_dispatch` com input `layers` (ex: `atual`, `2021-2025`, ou `all`)
+
+### 7.3 Atualização Leve ao Longo do Dia (Delta)
+
+**Executa:** `python scripts/atualizar.py --delta`
+**Custo no SPLegis:** uma sessão e um POST, cerca de 5 s
+
+- Consulta os projetos protocolados hoje e ontem (`autuacaoI` / `autuacaoF`) e os mescla em `projetos-atual.json`: os novos entram no topo, os já presentes são atualizados no lugar. Atualiza contagem, hash e `lastUpdate` no `version.json`.
+- Só publica quando houve mudança.
+- Só enxerga projetos novos ou da própria janela. Alterações em projetos antigos (norma, coautoria, palavras-chave) dependem da coleta completa.
+- Aborta sem gravar se o servidor devolver mais de 500 projetos, sinal de que o filtro de data foi ignorado.
+- Não faz nada enquanto o `anoCorrente` do `version.json` for diferente do ano corrente em São Paulo (virada do ano, antes da primeira coleta completa).
+
+**Convivência com os outros workflows.** A coleta completa e a de normas restauram os dados do `gh-pages` no início e republicam tudo no fim. Por isso o delta se adia quando uma delas está em fila ou em andamento (considerando só execuções das últimas 3 horas).
+
+**Execuções travadas.** A cada rodada, o delta cancela qualquer execução dos três workflows pendente há mais de 6 horas. Em 2026, uma execução agendada da coleta de normas ficou presa em `queued` de 06/08 a 11/11 sem nunca receber runner.
 
 ---
 
@@ -871,30 +902,29 @@ Via `workflow_dispatch` com input `layers` (ex: `atual`, `2021-2025`, ou `all`)
 **Mitigações:**
 
 1. **Volume baixo:**
-   - Máximo 8 requisições/dia (todas as layers)
-   - Delay de 15 segundos entre requisições
+   - Coleta completa: cerca de 134 páginas de 250 registros, uma vez por dia
+   - Delta: uma consulta de cerca de 5 s a cada 30 minutos, em horário comercial
+   - Pausa de 15 segundos entre camadas
 
 2. **Horário estratégico:**
-   - Todas execuções na madrugada (2h-4h AM)
-   - Servidor menos carregado, menos usuários
+   - Coleta completa agendada para a madrugada (02h23 SP); o atraso do GitHub pode empurrá-la para a manhã
+   - Delta restrito a dias úteis, das 8h às 21h
 
 3. **Headers realistas:**
    - User-Agent de navegador real
    - Accept: application/json
    - Referer da página de consulta
 
-4. **Delays entre chamadas:**
-   - 15 segundos entre requisições sequenciais
+4. **Chamadas sempre em série:**
    - Nunca fazer chamadas paralelas
 
 5. **Retry com backoff:**
-   - 3 tentativas em caso de falha
-   - Espera exponencial: 5s, 10s, 20s
-   - Timeout de 120 segundos por requisição
+   - 3 tentativas por página em caso de falha
+   - Espera exponencial: 15s, 30s
+   - Timeout de 180 segundos por requisição
 
-6. **Session persistente:**
-   - Obter cookies antes das chamadas reais
-   - Simular navegação humana
+6. **Sessão e token:**
+   - Cada tentativa abre sessão nova e obtém token novo na página de pesquisa
 
 **Avaliação de risco:** BAIXO (1-2% de chance de bloqueio)
 
@@ -909,9 +939,10 @@ O servidor do GitHub Actions roda em UTC. O servidor da Câmara e a virada do an
 O workflow de "Virada de Ano" rodar quando ainda é dia 31/12 em SP (ex: 02:00 UTC é 23:00 em SP), ou vice-versa, causando inconsistência nos filtros de data e na reconstrução das camadas.
 
 **Solução:** 
-Agendar o workflow de virada para quando **já for dia 1º de janeiro em ambos os locais**.
-- **08:00 UTC = 05:00 SP**.
-- Isso garante que tanto o relógio global quanto o relógio local da Câmara já viraram o ano.
+O descompasso entre os dois relógios só existe entre 00:00 e 03:00 UTC (21h00 a 00h00 em São Paulo). Basta agendar fora dessa janela:
+- Coleta completa: **05:23 UTC = 02h23 SP**. O GitHub só atrasa o disparo, nunca adianta, então a execução real cai sempre depois disso.
+- Delta: das 11:17 às 23:47 UTC, sempre o mesmo dia nos dois fusos.
+- Além disso, o script calcula o ano corrente e as datas do delta pelo relógio de São Paulo (`America/Sao_Paulo`), não pelo UTC.
 
 ---
 
@@ -1021,12 +1052,11 @@ Output: [
 **Ano na virada (31/12 → 01/01):**
 - Script recalcula faixas automaticamente
 - Estrutura se ajusta ao novo ano corrente
-- **Atenção:** Workflow aguarda janela segura de timezone (08:00 UTC)
+- Os agendamentos ficam fora da janela de descompasso de fuso (ver 8.3)
 
 **Primeiro dia do ano (1º janeiro):**
-- Workflow de virada (2h AM) roda antes
-- Workflows regulares (3h-4h AM) rodam depois
-- Garantir que arquivos estão com estrutura do novo ano
+- A coleta completa da madrugada cria a camada do ano novo
+- O delta só volta a atuar depois disso (não é dia útil, e ele confere o `anoCorrente` do `version.json`)
 
 ---
 
