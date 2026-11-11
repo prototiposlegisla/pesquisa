@@ -81,9 +81,9 @@ Contraste entre autoridade (serifa) e precisão técnica (monospace).
 
 ### **4.3. Elementos Humanos (Identificadores)**
 
-*   **Fonte:** Reenie Beanie.
-*   **Estilo:** Manuscrito grosso (marcador/caneta porosa).
-*   **Specs:** Font-size 2.5rem, Line-height 0.8, Font-weight 600.
+*   **Fonte:** Patrick Hand.
+*   **Estilo:** Letra de forma à mão, com algarismos regulares e legíveis.
+*   **Specs:** Font-size 2.1rem, Line-height 0.8, Font-weight 400.
 *   **Rotação:** Randômica e leve em cada cartão.
 
 ## **5. Componentes e Comportamentos**
