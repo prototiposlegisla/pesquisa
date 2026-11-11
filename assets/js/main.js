@@ -111,6 +111,7 @@
     let normasLoadError = false;
     let isNormasLoading = false;
     let activeMode = 'projetos'; // 'projetos' | 'normas'
+    let lastUpdateISO = null; // lastUpdate do version.json dos projetos
 
     // =========================================
     // ELEMENTOS DOM
@@ -210,6 +211,8 @@
             allData = jsons.flatMap(json => json.data || []);
             isDataLoaded = true;
             loadError = false;
+            lastUpdateISO = version.lastUpdate || null;
+            renderUpdateInfo();
 
             console.log(`Dados carregados: ${allData.length} projetos`);
 
@@ -1337,6 +1340,7 @@
         const info = document.createElement('div');
         info.className = 'info-field';
         info.innerHTML = `
+            <div class="info-section info-update" hidden></div>
             <div class="info-section">
                 <p class="info-title">COMO ABRIR PROJETOS E NORMAS</p>
                 <p>Para abrir, clique nos botões no canto superior direito dos cartões de resultado.</p>
@@ -1374,6 +1378,46 @@
             </div>            
         `;
         return info;
+    }
+
+    /**
+     * Preenche, no topo do campo de informações, o horário da última atualização
+     * da base de projetos e o projeto mais recente de cada tipo.
+     */
+    function renderUpdateInfo() {
+        if (!infoField || !isDataLoaded) return;
+        const box = infoField.querySelector('.info-update');
+        if (!box) return;
+
+        // O horário vem com o fuso de São Paulo embutido; é lido como texto para
+        // não ser convertido para o fuso de quem está vendo a página.
+        const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(lastUpdateISO || '');
+        const quando = m ? `${m[3]}/${m[2]}/${m[1]}, às ${m[4]}h${m[5]}` : '';
+
+        // Mais recente de cada tipo: maior ano e, dentro dele, maior número
+        const ultimos = {};
+        for (const row of allData) {
+            const tipo = row[0];
+            const numero = parseInt(row[1], 10);
+            const ano = parseInt(row[2], 10);
+            const atual = ultimos[tipo];
+            if (!atual || ano > atual.ano || (ano === atual.ano && numero > atual.numero)) {
+                ultimos[tipo] = { numero, ano };
+            }
+        }
+        const lista = ['PL', 'PLO', 'PDL', 'PR']
+            .filter(tipo => ultimos[tipo])
+            .map(tipo => `<code>${tipo} ${ultimos[tipo].numero}/${ultimos[tipo].ano}</code>`)
+            .join(' ');
+
+        if (!quando && !lista) return;
+
+        box.innerHTML = `
+            <p class="info-title">ÚLTIMA ATUALIZAÇÃO</p>
+            ${quando ? `<p>Base de projetos atualizada em <code>${quando}</code></p>` : ''}
+            ${lista ? `<p>Último projeto de cada tipo: ${lista}</p>` : ''}
+        `;
+        box.hidden = false;
     }
 
     /**
@@ -1767,6 +1811,7 @@
         // Cria campo de informações
         infoField = createInfoField();
         mainContainer.appendChild(infoField);
+        renderUpdateInfo(); // caso os dados já tenham chegado
 
         // Cria container de paginação
         paginationContainer = createPaginationContainer();
