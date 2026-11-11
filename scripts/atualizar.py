@@ -7,7 +7,7 @@ import argparse
 import requests
 import unicodedata
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 from zoneinfo import ZoneInfo
 
@@ -30,6 +30,15 @@ SP_TZ = ZoneInfo("America/Sao_Paulo")
 
 # Tamanho de cada quinquênio (5 anos)
 QUINQUENIO = 5
+
+# Atualização leve (--delta): janela de datas de protocolo consultada, em dias,
+# contando hoje. Dois dias cobrem a virada do dia e rodadas que não dispararam.
+DELTA_DIAS = 2
+# Uma janela de poucos dias traz dezenas de projetos. Muito acima disso, o
+# servidor ignorou o filtro de data e está devolvendo a base inteira.
+DELTA_MAX_PROJETOS = 500
+ATUAL_FILENAME = "projetos-atual.json"
+COLUMNS = ["tipo", "numero", "ano", "norma", "ementa", "promoventes", "palavras-chave", "searchable"]
 
 # --- UTILITÁRIOS ---
 
@@ -142,10 +151,14 @@ def _abrir_sessao() -> Tuple[requests.Session, str]:
 
     return session, match.group(1)
 
-def _fetch_page(ano_inicio: int, ano_fim: int, start: int) -> Tuple[List[Dict], int]:
+def _fetch_page(filtros: Dict[str, Any], start: int, descricao: str,
+                permite_vazio: bool = False) -> Tuple[List[Dict], int]:
     """
     Busca uma página de PAGE_SIZE projetos, com retries.
     Retorna (itens, recordsFiltered).
+
+    filtros: campos do formulário de pesquisa (anoInicio/anoFim, autuacaoI/autuacaoF...).
+    permite_vazio: aceita resultado sem itens (janela de datas sem protocolo).
     """
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -154,8 +167,7 @@ def _fetch_page(ano_inicio: int, ano_fim: int, start: int) -> Tuple[List[Dict], 
             session, token = _abrir_sessao()
 
             payload = {
-                "anoInicio": ano_inicio,
-                "anoFim": ano_fim,
+                **filtros,
                 "length": PAGE_SIZE,
                 "tipo": 0,
                 "start": start,
@@ -178,7 +190,7 @@ def _fetch_page(ano_inicio: int, ano_fim: int, start: int) -> Tuple[List[Dict], 
                     filtered = data.get("recordsFiltered", 0)
                     total = data.get("recordsTotal", 0)
                     items = data.get("data", [])
-                    if items or total == 0:
+                    if items or total == 0 or (permite_vazio and filtered == 0):
                         return items, filtered
                     # Base tem registros mas o filtro não retornou nada: sinal de
                     # parâmetro rejeitado silenciosamente, não de período vazio.
@@ -194,25 +206,28 @@ def _fetch_page(ano_inicio: int, ano_fim: int, start: int) -> Tuple[List[Dict], 
             print(f"  ⏳ Aguardando {wait_time}s (tentativa {attempt + 1}/{MAX_RETRIES})...")
             time.sleep(wait_time)
 
-    print(f"  🚨 Falha definitiva ao buscar {ano_inicio}-{ano_fim} (start={start})")
-    raise Exception(f"Falha ao buscar dados de {ano_inicio}-{ano_fim}")
+    print(f"  🚨 Falha definitiva ao buscar {descricao} (start={start})")
+    raise Exception(f"Falha ao buscar dados de {descricao}")
 
-def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
+def _fetch_all(filtros: Dict[str, Any], descricao: str, permite_vazio: bool = False,
+               max_projetos: Optional[int] = None) -> List[Dict]:
     """
-    Busca todos os projetos do período, paginando de PAGE_SIZE em PAGE_SIZE.
+    Busca todos os projetos que atendem aos filtros, paginando de PAGE_SIZE em PAGE_SIZE.
 
     O tempo de resposta do servidor cresce com o número de registros pedidos;
     pedir um quinquênio inteiro de uma vez (length=0) passou a estourar o timeout.
     """
-    print(f"  🔄 Buscando {ano_inicio}-{ano_fim} (páginas de {PAGE_SIZE})...")
+    print(f"  🔄 Buscando {descricao} (páginas de {PAGE_SIZE})...")
 
-    items, filtered = _fetch_page(ano_inicio, ano_fim, 0)
+    items, filtered = _fetch_page(filtros, 0, descricao, permite_vazio)
+    if max_projetos is not None and filtered > max_projetos:
+        raise Exception(f"Servidor informa {filtered} projetos para {descricao} (limite esperado: {max_projetos}); filtro provavelmente ignorado")
     por_codigo = {p.get("codigo"): p for p in items}
 
     start = PAGE_SIZE
     while start < filtered:
         print(f"     {start}/{filtered}...")
-        page, _ = _fetch_page(ano_inicio, ano_fim, start)
+        page, _ = _fetch_page(filtros, start, descricao)
         por_codigo.update((p.get("codigo"), p) for p in page)
         start += PAGE_SIZE
 
@@ -220,10 +235,24 @@ def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
     # de fora; a contagem de códigos únicos denuncia isso.
     projetos = list(por_codigo.values())
     if len(projetos) != filtered:
-        raise Exception(f"Paginação inconsistente em {ano_inicio}-{ano_fim}: {len(projetos)} projetos únicos, servidor informa {filtered}")
+        raise Exception(f"Paginação inconsistente em {descricao}: {len(projetos)} projetos únicos, servidor informa {filtered}")
 
     print(f"  ✅ {len(projetos)} projetos (Total: {filtered})")
     return projetos
+
+def fetch_projects(ano_inicio: int, ano_fim: int) -> List[Dict]:
+    """Busca todos os projetos apresentados entre os anos dados."""
+    return _fetch_all({"anoInicio": ano_inicio, "anoFim": ano_fim}, f"{ano_inicio}-{ano_fim}")
+
+def fetch_projects_por_protocolo(data_inicio: datetime, data_fim: datetime) -> List[Dict]:
+    """Busca os projetos protocolados entre as datas dadas (inclusive). Pode ser vazio."""
+    ini, fim = data_inicio.strftime("%d/%m/%Y"), data_fim.strftime("%d/%m/%Y")
+    return _fetch_all(
+        {"autuacaoI": ini, "autuacaoF": fim},
+        f"protocolo de {ini} a {fim}",
+        permite_vazio=True,
+        max_projetos=DELTA_MAX_PROJETOS,
+    )
 
 def transform_norma(norma: Dict) -> str:
     """Input: {'numero': 18349, 'ano': 2025} -> Output: '18349/2025'"""
@@ -328,7 +357,7 @@ def process_layer(ano_inicio: int, ano_fim: int, output_filename: str,
                 processed_data.append(row)
 
         final_json = {
-            "columns": ["tipo", "numero", "ano", "norma", "ementa", "promoventes", "palavras-chave", "searchable"],
+            "columns": COLUMNS,
             "data": processed_data
         }
 
@@ -352,6 +381,90 @@ def process_layer(ano_inicio: int, ano_fim: int, output_filename: str,
     except Exception as e:
         print(f"  ❌ Falha crítica processando camada: {e}")
         return False, 0, None
+
+# --- ATUALIZAÇÃO LEVE (DELTA) ---
+
+def _github_output(chave: str, valor: str):
+    """Expõe um resultado para os passos seguintes do workflow (no-op fora do Actions)."""
+    caminho = os.environ.get("GITHUB_OUTPUT")
+    if caminho:
+        with open(caminho, "a", encoding="utf-8") as f:
+            f.write(f"{chave}={valor}\n")
+
+def process_delta() -> bool:
+    """
+    Acrescenta à camada do ano corrente os projetos protocolados nos últimos
+    DELTA_DIAS dias, sem refazer a camada: uma única consulta pequena ao servidor.
+
+    Só enxerga projetos novos ou os da própria janela; alterações em projetos
+    antigos (norma, coautoria, palavras-chave) ficam para a reconstrução diária.
+
+    Retorna True se a camada foi alterada e gravada.
+    """
+    agora = datetime.now(SP_TZ)
+    ano_corrente = agora.year
+    print(f"⚡ Atualização leve de projetos — {agora.strftime('%d/%m/%Y %H:%M')}")
+
+    version = load_json("version.json")
+    atual = load_json(ATUAL_FILENAME)
+    camada = (version or {}).get("camadas", {}).get("projetos-atual")
+    if not version or not atual or not camada:
+        raise Exception("Base existente não encontrada (version.json / projetos-atual.json); rode a atualização completa antes")
+    if atual.get("columns") != COLUMNS:
+        raise Exception("projetos-atual.json com colunas diferentes das esperadas")
+
+    # Na virada do ano a camada "atual" ainda é a do ano anterior até a
+    # reconstrução completa redefinir as camadas; o delta não mexe nisso.
+    if version.get("anoCorrente") != ano_corrente:
+        print(f"  ⏭️  Base ainda no ano {version.get('anoCorrente')}; aguardando a reconstrução completa.")
+        return False
+
+    raw = fetch_projects_por_protocolo(agora - timedelta(days=DELTA_DIAS - 1), agora)
+    raw = [p for p in raw if p.get("ano") == ano_corrente]
+    # Mais recente primeiro, como na camada completa
+    raw.sort(key=lambda x: x.get("codigo", 0), reverse=True)
+
+    linhas = []
+    for proj in raw:
+        row = transform_project(proj)
+        if row is None:
+            raise Exception(f"Projeto {proj.get('codigo')} não pôde ser transformado")
+        linhas.append(row)
+
+    if not linhas:
+        print("  ⏭️  Nenhum projeto protocolado na janela.")
+        return False
+
+    if not validate_data(raw, {"columns": COLUMNS, "data": linhas}):
+        raise Exception("Validação falhou para os projetos da janela")
+
+    chave = lambda row: (row[0], row[1], row[2])  # tipo, numero, ano
+    posicao = {chave(row): i for i, row in enumerate(atual["data"])}
+    novos, alterados = [], 0
+    for row in linhas:
+        i = posicao.get(chave(row))
+        if i is None:
+            novos.append(row)
+        elif atual["data"][i] != row:
+            atual["data"][i] = row
+            alterados += 1
+
+    if not novos and not alterados:
+        print(f"  ⏭️  sem mudanças ({len(linhas)} projetos na janela, todos já na base)")
+        return False
+
+    atual["data"] = novos + atual["data"]
+    for row in novos:
+        print(f"  ➕ {row[0]} {row[1]}/{row[2]}")
+    print(f"  → {len(novos)} novo(s), {alterados} alterado(s)")
+
+    save_json(ATUAL_FILENAME, atual)
+    camada["projetos"] = len(atual["data"])
+    camada["hash"] = content_hash(atual)
+    version["lastUpdate"] = agora.isoformat()
+    version["totalProjetos"] = sum(info.get("projetos", 0) for info in version["camadas"].values())
+    save_json("version.json", version)
+    return True
 
 # --- VALIDAÇÃO ---
 
@@ -450,7 +563,18 @@ def main():
     parser = argparse.ArgumentParser(description="Atualiza base de projetos legislativos de São Paulo")
     parser.add_argument('--layer', type=str, default='all',
                         help='Layers a processar: all, atual, ou nomes separados por vírgula')
+    parser.add_argument('--delta', action='store_true',
+                        help='Atualização leve: só acrescenta os projetos protocolados nos últimos dias')
     args = parser.parse_args()
+
+    if args.delta:
+        try:
+            changed = process_delta()
+        except Exception as e:
+            print(f"  ❌ Falha na atualização leve: {e}")
+            sys.exit(1)
+        _github_output("changed", "true" if changed else "false")
+        return
 
     ano_corrente = datetime.now(SP_TZ).year
     all_layers = build_layers(ano_corrente)

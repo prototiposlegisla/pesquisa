@@ -2,7 +2,9 @@ name: Update Database
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Daily at 09:00 UTC (06:00 SP)
+    # Diária, de madrugada: 05:23 UTC (02h23 em SP). O GitHub costuma atrasar o disparo
+    # em horas; saindo cedo, a coleta (~50 min) tende a terminar antes do expediente.
+    - cron: '23 5 * * *'
   push:
     branches:
       - main

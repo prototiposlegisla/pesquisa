@@ -1,0 +1,95 @@
+name: Update Database (delta)
+
+# Atualização leve ao longo do dia: uma única consulta pequena ao SPLEGIS, pelos
+# projetos protocolados hoje e ontem, mesclada em dados/projetos/projetos-atual.json.
+# A reconstrução completa (update.yml) continua rodando uma vez por dia e é ela
+# que captura alterações em projetos antigos.
+
+on:
+  schedule:
+    # A cada 30 min, das 08h17 às 20h47 de São Paulo (UTC-3), em dias úteis.
+    # Minutos quebrados: o GitHub atrasa mais os agendamentos de hora cheia.
+    - cron: '17,47 11-23 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: update-delta
+  cancel-in-progress: false
+
+jobs:
+  delta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Os outros workflows restauram os dados do gh-pages no início e publicam
+      # tudo de volta no fim; um delta publicado nesse intervalo seria sobrescrito,
+      # e um delta que publicasse depois desfaria o trabalho deles.
+      - name: Skip if a full update is running
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          busy=0
+          for wf in update.yml update-normas.yml; do
+            for status in in_progress queued; do
+              n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$wf" --status "$status" --json databaseId --jq 'length')
+              busy=$((busy + n))
+            done
+          done
+          if [ "$busy" -gt 0 ]; then
+            echo "Outra atualização em andamento; delta adiado para a próxima rodada."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout
+        if: steps.guard.outputs.skip == 'false'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.guard.outputs.skip == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        if: steps.guard.outputs.skip == 'false'
+        run: pip install requests
+
+      # Sem a base publicada não há onde mesclar: aqui a falha é fatal.
+      - name: Restore existing data from gh-pages
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          git fetch origin gh-pages --depth=1
+          git checkout origin/gh-pages -- dados/
+
+      - name: Run delta update
+        id: delta
+        if: steps.guard.outputs.skip == 'false'
+        env:
+          PYTHONUNBUFFERED: 1
+        run: python scripts/atualizar.py --delta
+
+      - name: Prepare deployment
+        if: steps.delta.outputs.changed == 'true'
+        run: |
+          mkdir public
+          cp -r dados public/
+          cp index.html public/
+          if [ -d "assets" ]; then cp -r assets public/; fi
+          if [ -f "CNAME" ]; then cp CNAME public/; fi
+          if [ -f "LICENSE" ]; then cp LICENSE public/; fi
+
+      - name: Deploy to gh-pages
+        if: steps.delta.outputs.changed == 'true'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          force_orphan: true
