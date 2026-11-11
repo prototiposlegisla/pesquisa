@@ -14,7 +14,7 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write  # ler as execuções em andamento e cancelar as travadas
 
 concurrency:
   group: update-delta
@@ -25,6 +25,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # O GitHub às vezes deixa uma execução agendada presa em "queued" para sempre,
+      # sem nunca lhe dar um runner (aconteceu com a de normas de 06/08/2026).
+      # Nenhuma atualização legítima dura 6 horas, então o que passar disso é cancelado.
+      - name: Cancel stuck runs
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in update.yml update-normas.yml update-delta.yml; do
+            for status in queued in_progress waiting pending requested; do
+              gh run list --repo "$GITHUB_REPOSITORY" --workflow "$wf" --status "$status" --limit 50 --json databaseId,createdAt --jq '.[] | select((.createdAt | fromdateiso8601) < (now - 21600)) | .databaseId'
+            done
+          done | sort -u | while read -r id; do
+            [ "$id" = "$GITHUB_RUN_ID" ] && continue
+            echo "::warning::Cancelando execução travada: $id"
+            gh run cancel "$id" --repo "$GITHUB_REPOSITORY"               || gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/force-cancel"               || echo "::warning::Não foi possível cancelar $id"
+          done
+
       # Os outros workflows restauram os dados do gh-pages no início e publicam
       # tudo de volta no fim; um delta publicado nesse intervalo seria sobrescrito,
       # e um delta que publicasse depois desfaria o trabalho deles.
