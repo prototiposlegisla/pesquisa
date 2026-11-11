@@ -33,10 +33,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Só contam execuções das últimas 3 horas: uma execução antiga presa em
+          # "queued" no GitHub bloquearia o delta para sempre.
           busy=0
           for wf in update.yml update-normas.yml; do
             for status in in_progress queued; do
-              n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$wf" --status "$status" --json databaseId --jq 'length')
+              n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$wf" --status "$status" --json createdAt                 --jq '[.[] | select((.createdAt | fromdateiso8601) > (now - 10800))] | length')
               busy=$((busy + n))
             done
           done
