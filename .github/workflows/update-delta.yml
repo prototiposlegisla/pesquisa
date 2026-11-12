@@ -6,11 +6,13 @@ name: Update Database (delta)
 # que captura alterações em projetos antigos.
 
 on:
-  schedule:
-    # A cada 30 min, das 08h17 às 20h47 de São Paulo (UTC-3), em dias úteis.
-    # Minutos quebrados: o GitHub atrasa mais os agendamentos de hora cheia.
-    - cron: '17,47 11-23 * * 1-5'
+  # Disparo principal: o cron-job.org chama a API (workflow_dispatch) a cada 30 min,
+  # das 08h00 às 20h30 de São Paulo, em dias úteis. Ver specs/spec-database.md, 7.3.
   workflow_dispatch:
+  schedule:
+    # Reserva: o agendador do GitHub quase não dispara este workflow (2 de 26
+    # rodadas no primeiro dia, com horas de atraso).
+    - cron: '17,47 11-23 * * 1-5'
 
 permissions:
   contents: write

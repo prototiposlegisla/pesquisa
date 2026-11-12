@@ -846,7 +846,7 @@ São três workflows, todos publicando no branch `gh-pages`:
 |---|---|---|---|
 | Coleta completa de projetos | `update.yml` | `23 5 * * *` | 02h23, todos os dias |
 | Coleta de normas | `update-normas.yml` | `00 14 * * *` | 11h00, todos os dias |
-| Atualização leve de projetos (delta) | `update-delta.yml` | `17,47 11-23 * * 1-5` | a cada 30 min, das 08h17 às 20h47, em dias úteis |
+| Atualização leve de projetos (delta) | `update-delta.yml` | disparo externo (ver 7.3); reserva: `17,47 11-23 * * 1-5` | a cada 30 min, das 08h00 às 20h30, em dias úteis |
 
 O agendador do GitHub atrasa os disparos, às vezes em várias horas (entre outubro e novembro de 2026, a coleta marcada para 09:00 UTC rodou entre 15:00 e 19:40 UTC). Ele nunca adianta. Os minutos quebrados evitam a hora cheia, que é a mais congestionada.
 
@@ -888,6 +888,21 @@ Via `workflow_dispatch` com input `layers` (ex: `atual`, `2021-2025`, ou `all`)
 - Não faz nada enquanto o `anoCorrente` do `version.json` for diferente do ano corrente em São Paulo (virada do ano, antes da primeira coleta completa).
 
 **Convivência com os outros workflows.** A coleta completa e a de normas restauram os dados do `gh-pages` no início e republicam tudo no fim. Por isso o delta se adia quando uma delas está em fila ou em andamento (considerando só execuções das últimas 3 horas).
+
+**Disparo.** O agendador do GitHub não serve para o delta: no primeiro dia (11/11/2026), dos 26 disparos previstos só 2 aconteceram, com horas de atraso. Quem dispara de fato é um agendador externo, o cron-job.org (tarefa "Atualização periódica LEISP"), que chama a API do GitHub a cada 30 minutos, das 08h00 às 20h30 de São Paulo, de segunda a sexta:
+
+```
+POST https://api.github.com/repos/prototiposlegisla/pesquisa/actions/workflows/update-delta.yml/dispatches
+Authorization: Bearer <token>
+Accept: application/vnd.github+json
+Content-Type: application/json
+
+{"ref":"main"}
+```
+
+A resposta esperada é `204 No Content`. O token é um fine-grained personal access token chamado `leisp-delta-cron`, com a organização `prototiposlegisla` como dona do recurso, acesso só ao repositório `pesquisa` e permissão "Actions: Read and write". Ele fica guardado apenas no cron-job.org e **vence em 13/11/2027**; depois disso o disparo externo passa a falhar com `401` até o token ser renovado e trocado lá.
+
+O `schedule` do workflow continua como reserva. Disparos duplicados não causam problema: o grupo de `concurrency` enfileira as execuções, e a segunda não encontra mudança e não publica.
 
 **Execuções travadas.** A cada rodada, o delta cancela qualquer execução dos três workflows pendente há mais de 6 horas. Em 2026, uma execução agendada da coleta de normas ficou presa em `queued` de 06/08 a 11/11 sem nunca receber runner.
 
