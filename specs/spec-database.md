@@ -842,13 +842,15 @@ def content_hash(data):
 
 São três workflows, todos publicando no branch `gh-pages`:
 
-| Workflow | Arquivo | Agendamento (UTC) | Em São Paulo |
+| Workflow | Arquivo | Disparo externo (São Paulo) | Reserva: `schedule` do GitHub (UTC) |
 |---|---|---|---|
-| Coleta completa de projetos | `update.yml` | `23 5 * * *` | 02h23, todos os dias |
-| Coleta de normas | `update-normas.yml` | `00 14 * * *` | 11h00, todos os dias |
-| Atualização leve de projetos (delta) | `update-delta.yml` | disparo externo (ver 7.3); reserva: `17,47 11-23 * * 1-5` | a cada 30 min, das 08h00 às 20h30, em dias úteis |
+| Coleta completa de projetos | `update.yml` | 02h23, todos os dias | `23 5 * * *` |
+| Coleta de normas | `update-normas.yml` | 11h00, todos os dias | `00 14 * * *` |
+| Atualização leve de projetos (delta) | `update-delta.yml` | a cada 30 min, das 08h00 às 20h30, em dias úteis | `17,47 11-23 * * 1-5` |
 
-O agendador do GitHub atrasa os disparos, às vezes em várias horas (entre outubro e novembro de 2026, a coleta marcada para 09:00 UTC rodou entre 15:00 e 19:40 UTC). Ele nunca adianta. Os minutos quebrados evitam a hora cheia, que é a mais congestionada.
+O agendador do GitHub não é pontual neste repositório: entre 17/10 e 10/11/2026, a coleta completa marcada para 09:00 UTC começou de 4 a 10,5 horas depois, com o atraso crescendo ao longo do período, e o delta quase não disparou. Ele nunca adianta. Por isso os três workflows são disparados por um agendador externo, o cron-job.org, que chama a API do GitHub (`workflow_dispatch`) com o corpo `{"ref":"main"}`; os detalhes da chamada e do token estão na seção 7.3. O `schedule` de cada workflow fica como reserva.
+
+Na coleta completa e na de normas, um job inicial (`gate`) dispensa a execução agendada quando já houve, nas últimas 20 horas, um disparo por `workflow_dispatch` bem-sucedido ou ainda em andamento. Sem isso a coleta rodaria duas vezes por dia. Se o disparo externo falhar (token vencido, serviço fora do ar), a execução agendada do GitHub faz a coleta, com o atraso habitual.
 
 ### 7.1 Coleta Completa Diária
 
@@ -856,7 +858,7 @@ O agendador do GitHub atrasa os disparos, às vezes em várias horas (entre outu
 name: Update Database
 on:
   schedule:
-    - cron: '23 5 * * *'  # 05:23 UTC (02h23 SP), todos os dias
+    - cron: '23 5 * * *'  # reserva; o disparo principal é externo, às 02h23 SP
   push:
     branches: [main]
   workflow_dispatch:
@@ -900,7 +902,7 @@ Content-Type: application/json
 {"ref":"main"}
 ```
 
-A resposta esperada é `204 No Content`. O token é um fine-grained personal access token chamado `leisp-delta-cron`, com a organização `prototiposlegisla` como dona do recurso, acesso só ao repositório `pesquisa` e permissão "Actions: Read and write". Ele fica guardado apenas no cron-job.org e **vence em 13/11/2027**; depois disso o disparo externo passa a falhar com `401` até o token ser renovado e trocado lá.
+Para a coleta completa e a de normas, a chamada é a mesma, trocando `update-delta.yml` por `update.yml` ou `update-normas.yml` na URL. A resposta esperada é `204 No Content`. O token é um fine-grained personal access token chamado `leisp-delta-cron`, com a organização `prototiposlegisla` como dona do recurso, acesso só ao repositório `pesquisa` e permissão "Actions: Read and write". Ele fica guardado apenas no cron-job.org e **vence em 13/11/2027**; depois disso o disparo externo passa a falhar com `401` até o token ser renovado e trocado lá.
 
 O `schedule` do workflow continua como reserva. Disparos duplicados não causam problema: o grupo de `concurrency` enfileira as execuções, e a segunda não encontra mudança e não publica.
 
@@ -955,7 +957,7 @@ O workflow de "Virada de Ano" rodar quando ainda é dia 31/12 em SP (ex: 02:00 U
 
 **Solução:** 
 O descompasso entre os dois relógios só existe entre 00:00 e 03:00 UTC (21h00 a 00h00 em São Paulo). Basta agendar fora dessa janela:
-- Coleta completa: **05:23 UTC = 02h23 SP**. O GitHub só atrasa o disparo, nunca adianta, então a execução real cai sempre depois disso.
+- Coleta completa: **05:23 UTC = 02h23 SP**, tanto no disparo externo quanto na reserva. O GitHub só atrasa o disparo, nunca adianta, então a execução real cai sempre depois disso.
 - Delta: das 11:17 às 23:47 UTC, sempre o mesmo dia nos dois fusos.
 - Além disso, o script calcula o ano corrente e as datas do delta pelo relógio de São Paulo (`America/Sao_Paulo`), não pelo UTC.
 

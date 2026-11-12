@@ -1,9 +1,11 @@
 name: Update Database
 
 on:
+  # Disparo principal: o cron-job.org chama a API (workflow_dispatch) todo dia às
+  # 02h23 de São Paulo. Ver specs/spec-database.md, seção 7.
   schedule:
-    # Diária, de madrugada: 05:23 UTC (02h23 em SP). O GitHub costuma atrasar o disparo
-    # em horas; saindo cedo, a coleta (~50 min) tende a terminar antes do expediente.
+    # Reserva: 05:23 UTC (02h23 em SP), mas o GitHub atrasa o disparo de 4 a 10 horas.
+    # Só coleta se o disparo externo não tiver rodado (job "gate").
     - cron: '23 5 * * *'
   push:
     branches:
@@ -18,9 +20,37 @@ on:
 
 permissions:
   contents: write
+  actions: read  # o job "gate" consulta as execuções recentes
 
 jobs:
+  # O disparo agendado do GitHub chega horas depois do externo. Se o externo já
+  # rodou (ou está rodando), o agendado desiste, para não coletar duas vezes no dia.
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - name: Skip scheduled run if an external dispatch already ran
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run=true
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            # Disparos das últimas 20 h, bem-sucedidos ou ainda em andamento.
+            # Se a consulta falhar, a coleta roda (melhor duas vezes que nenhuma).
+            n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow update.yml --event workflow_dispatch --limit 30 --json status,conclusion,createdAt --jq '[.[] | select((.createdAt | fromdateiso8601) > (now - 72000)) | select(.conclusion == "success" or .status != "completed")] | length') || n=0
+            if [ "${n:-0}" -gt 0 ]; then
+              echo "::notice::Coleta já feita por disparo externo nas últimas 20 h; execução agendada dispensada."
+              run=false
+            fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
   build-and-deploy:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     # A coleta completa leva de 45 a 80 min; acima disso travou.
     timeout-minutes: 180
