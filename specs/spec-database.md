@@ -34,6 +34,7 @@ autuacaoI / autuacaoF: data inicial e final de protocolo, dd/mm/aaaa (atualizaç
 start / length: paginação (length = 250)
 tipo: 0 (todos os tipos)
 filtroclicado: 1 (sem ele o servidor responde 200 com recordsFiltered = 0)
+order[0][column] / order[0][dir] + columns[i][name]: ordenação pela coluna PROJETO (ver 2.3)
 __RequestVerificationToken: token extraído da página de pesquisa
 ```
 
@@ -41,7 +42,7 @@ __RequestVerificationToken: token extraído da página de pesquisa
 - O tempo de resposta cresce com o número de registros pedidos. Até 05/10/2026 um quinquênio inteiro (`length: 0`) vinha numa requisição só; a partir de 06/10/2026 o servidor ficou de 2 a 4 vezes mais lento e essas requisições passaram a estourar o timeout.
 - A coleta completa usa páginas de 250 registros (de 10 a 40 s cada, em novembro de 2026), com timeout de 180 s.
 - O filtro por data de protocolo devolve os projetos de dois ou três dias em cerca de 5 s.
-- O parâmetro de ordenação do DataTables (`order[0]`) não teve efeito no teste de 11/11/2026.
+- Sem ordenação explícita, o servidor não garante a mesma ordem entre uma página e outra: as páginas se sobrepõem e projetos ficam de fora (em 24/11/2026, 4531 códigos únicos de 4577 em 2001-2005 e 5731 de 5740 em 2021-2025). A coleta envia `order[0][column]=1`, `order[0][dir]=asc` e a descrição das colunas (`columns[i][name]`, com `PROJETO` na posição 1), o que ordena por ano, número e tipo e torna a paginação estável. O `order[0]` sozinho, sem `columns[i][name]`, não teve efeito no teste de 11/11/2026.
 
 ---
 

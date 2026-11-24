@@ -39,6 +39,9 @@ DELTA_DIAS = 2
 DELTA_MAX_PROJETOS = 500
 ATUAL_FILENAME = "projetos-atual.json"
 COLUMNS = ["tipo", "numero", "ano", "norma", "ementa", "promoventes", "palavras-chave", "searchable"]
+# Colunas da tabela de resultados do SPLegis, na ordem em que a página as declara
+# (a primeira, de ícones, não tem nome). Usadas para pedir ordenação explícita.
+COLUNAS_DATATABLE = ["", "PROJETO", "EMENTA", "NORMA", "PALAVRA", "PROMOVENTE", "LOCALIZACAO"]
 
 # --- UTILITÁRIOS ---
 
@@ -151,6 +154,28 @@ def _abrir_sessao() -> Tuple[requests.Session, str]:
 
     return session, match.group(1)
 
+def _parametros_ordenacao() -> Dict[str, Any]:
+    """
+    Parâmetros do DataTables que pedem ordenação pela coluna PROJETO (ano, número, tipo).
+
+    Sem eles o servidor não garante a mesma ordem entre uma página e outra: páginas
+    se sobrepõem, projetos ficam de fora e a coleta do quinquênio falha por
+    "Paginação inconsistente". A chave ano+número+tipo é única, então a ordem é total.
+    """
+    params: Dict[str, Any] = {}
+    for i, nome in enumerate(COLUNAS_DATATABLE):
+        params[f"columns[{i}][data]"] = i
+        params[f"columns[{i}][name]"] = nome
+        params[f"columns[{i}][searchable]"] = "true"
+        params[f"columns[{i}][orderable]"] = "true" if nome and nome != "PALAVRA" else "false"
+        params[f"columns[{i}][search][value]"] = ""
+        params[f"columns[{i}][search][regex]"] = "false"
+    params["order[0][column]"] = COLUNAS_DATATABLE.index("PROJETO")
+    params["order[0][dir]"] = "asc"
+    params["search[value]"] = ""
+    params["search[regex]"] = "false"
+    return params
+
 def _fetch_page(filtros: Dict[str, Any], start: int, descricao: str,
                 permite_vazio: bool = False) -> Tuple[List[Dict], int]:
     """
@@ -167,6 +192,7 @@ def _fetch_page(filtros: Dict[str, Any], start: int, descricao: str,
             session, token = _abrir_sessao()
 
             payload = {
+                **_parametros_ordenacao(),
                 **filtros,
                 "length": PAGE_SIZE,
                 "tipo": 0,
